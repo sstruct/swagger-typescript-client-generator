@@ -1,9 +1,9 @@
-import { Command } from "./commands/command"
-import { Spec } from "swagger-schema-official"
-import { writerFactory } from "./writer/writerFactory"
 import * as yargs from "yargs"
-import { bundleCommand, clientCommand, modelsCommand } from "./commands"
+import { Spec } from "swagger-schema-official"
+import { Command } from "./commands/command"
+import { writerFactory } from "./writer/writerFactory"
 import { readerFactory } from "./fileReader/readerFactory"
+import { bundleCommand, clientCommand, modelsCommand } from "./commands"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require("../package.json")
@@ -22,39 +22,39 @@ const args = yargs
     type: "string",
     alias: "f",
     description: "swagger file",
-    required: true
+    required: true,
   })
   .option("allowVoidParameterTypes", {
     boolean: true,
     default: false,
-    alias: "a"
+    alias: "a",
   })
   .command(
     "models",
     "generate models files",
-    yargsModels => yargsModels,
+    (yargsModels) => yargsModels,
     useCommand(modelsCommand)
   )
   .command(
     "client <name> [importModelsFrom]",
     "generate client code",
-    yargsClient =>
+    (yargsClient) =>
       yargsClient
         .positional("name", {
-          type: "string"
+          type: "string",
         })
         .positional("importModelsFrom", {
           default: "./model",
-          type: "string"
+          type: "string",
         }),
     useCommand(clientCommand)
   )
   .command(
     "bundle <name>",
     "generate models and client",
-    yarngsBundle =>
+    (yarngsBundle) =>
       yarngsBundle.positional("name", {
-        type: "string"
+        type: "string",
       }),
     useCommand(bundleCommand)
   )

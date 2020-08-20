@@ -5,8 +5,8 @@ export class TypescriptNameNormalizer implements Normalizer {
     return name
       .split(/[/.-]/g)
       .filter(Boolean)
-      .map(segment => {
-        if (segment[0] === "{" && segment[segment.length - 1] === "}") {
+      .map((segment: string) => {
+        if (segment.startsWith("{") && segment.endsWith("}")) {
           segment =
             "By" +
             segment[1].toUpperCase() +
@@ -14,11 +14,11 @@ export class TypescriptNameNormalizer implements Normalizer {
         }
         return segment
       })
-      .map(str => {
+      .map((str) => {
         return str.replace(/[^a-zA-Z0-9_]/g, "")
       })
-      .map(str => {
-        return str[0].toUpperCase() + str.substr(1)
+      .map((str, index) => {
+        return index === 0 ? str : str[0].toUpperCase() + str.substr(1)
       })
       .join("")
   }

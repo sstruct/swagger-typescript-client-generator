@@ -17,6 +17,7 @@
     "url": "https://github.com/psrebniak/swagger-typescript-client-generator.git"
   },
   "dependencies": {
+    "@types/swagger-schema-official": "^2.0.21",
     "js-yaml": "^3.13.1",
     "prettier": "^2.0.3",
     "swagger-typescript-client-generator-runtime": "^1.5.3",

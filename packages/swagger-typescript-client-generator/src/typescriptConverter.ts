@@ -15,7 +15,7 @@ import {
   PARAMETER_TYPE_FORM_DATA,
   PARAMETER_TYPE_HEADER,
   PARAMETER_TYPE_PATH,
-  PARAMETER_TYPE_QUERY
+  PARAMETER_TYPE_QUERY,
 } from "./swaggerTypes"
 import { TypescriptNameNormalizer } from "./typescriptNameNormalizer"
 
@@ -48,7 +48,7 @@ export class TypescriptConverter implements BaseConverter {
     this.settings = Object.assign(
       {},
       {
-        allowVoidParameters: true
+        allowVoidParameters: true,
       },
       settings || {}
     )
@@ -65,7 +65,7 @@ export class TypescriptConverter implements BaseConverter {
       queryParams,
       bodyParams,
       formDataParams,
-      headerParams
+      headerParams,
     } = this.getParametersJarFactory().createFromOperation(operation)
 
     const parameterTypes: string[] = []
@@ -113,12 +113,12 @@ export class TypescriptConverter implements BaseConverter {
       queryParams,
       bodyParams,
       formDataParams,
-      headerParams
+      headerParams,
     } = this.getParametersJarFactory().createFromOperation(operation)
 
     let output = ""
 
-    const parameters: string[] = pathParams.map(parameter => {
+    const parameters: string[] = pathParams.map((parameter) => {
       return `${
         parameter.name
       }${PARAMETER_PATH_SUFFIX}: ${this.generateTypeValue(
@@ -127,41 +127,35 @@ export class TypescriptConverter implements BaseConverter {
     })
     const args: string[] = [PARAMETER_TYPE_PATH]
 
-    if (this.settings.allowVoidParameters || queryParams.length > 0) {
-      parameters.push(
-        `${PARAMETER_TYPE_QUERY}: ${name}${PARAMETERS_QUERY_SUFFIX}`
-      )
-      args.push(PARAMETER_TYPE_QUERY)
-    } else {
-      args.push(TYPESCRIPT_TYPE_UNDEFINED)
+    const appendParametersArgs = (paramsType, params, paramsSuffix) => {
+      if (this.settings.allowVoidParameters || params.length > 0) {
+        parameters.push(`${paramsType}: ${name}${paramsSuffix}`)
+        args.push(paramsType)
+      } else {
+        args.push(TYPESCRIPT_TYPE_UNDEFINED)
+      }
     }
 
-    if (this.settings.allowVoidParameters || bodyParams.length > 0) {
-      parameters.push(
-        `${PARAMETER_TYPE_BODY}: ${name}${PARAMETERS_BODY_SUFFIX}`
-      )
-      args.push(PARAMETER_TYPE_BODY)
-    } else {
-      args.push(TYPESCRIPT_TYPE_UNDEFINED)
-    }
-
-    if (this.settings.allowVoidParameters || formDataParams.length > 0) {
-      parameters.push(
-        `${PARAMETER_TYPE_FORM_DATA}: ${name}${PARAMETERS_FORM_DATA_SUFFIX}`
-      )
-      args.push(PARAMETER_TYPE_FORM_DATA)
-    } else {
-      args.push(TYPESCRIPT_TYPE_UNDEFINED)
-    }
-
-    if (this.settings.allowVoidParameters || headerParams.length > 0) {
-      parameters.push(
-        `${PARAMETER_TYPE_HEADER}: ${name}${PARAMETERS_HEADER_SUFFIX}`
-      )
-      args.push(PARAMETER_TYPE_HEADER)
-    } else {
-      args.push(TYPESCRIPT_TYPE_UNDEFINED)
-    }
+    appendParametersArgs(
+      PARAMETER_TYPE_QUERY,
+      queryParams,
+      PARAMETERS_QUERY_SUFFIX
+    )
+    appendParametersArgs(
+      PARAMETER_TYPE_BODY,
+      bodyParams,
+      PARAMETERS_BODY_SUFFIX
+    )
+    appendParametersArgs(
+      PARAMETER_TYPE_FORM_DATA,
+      formDataParams,
+      PARAMETERS_FORM_DATA_SUFFIX
+    )
+    appendParametersArgs(
+      PARAMETER_TYPE_HEADER,
+      headerParams,
+      PARAMETERS_HEADER_SUFFIX
+    )
 
     const responseTypes =
       Object.entries(operation.responses || {})
@@ -176,7 +170,7 @@ export class TypescriptConverter implements BaseConverter {
     output += `${pathParams.length > 0 ? "let" : "const"} path = '${path}'\n`
 
     output += pathParams
-      .map(parameter => {
+      .map((parameter) => {
         return `path = path.replace('{${parameter.name}}', String(${parameter.name}${PARAMETER_PATH_SUFFIX}))\n`
       })
       .join("\n")
@@ -209,12 +203,13 @@ export class TypescriptConverter implements BaseConverter {
     if (Array.isArray(definition.allOf) && definition.allOf.length > 0) {
       return (
         definition.allOf
-          .map(schema => this.generateTypeValue(schema))
+          .map((schema) => this.generateTypeValue(schema))
           .join(" & ") || TYPESCRIPT_TYPE_VOID
       )
     }
 
     switch (definition.type) {
+      // ??
       case DEFINITION_TYPE_ENUM: {
         return definition.enum.join(" | ")
       }
