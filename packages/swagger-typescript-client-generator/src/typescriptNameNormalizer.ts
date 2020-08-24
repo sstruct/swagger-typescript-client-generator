@@ -16,7 +16,8 @@ export class TypescriptNameNormalizer implements Normalizer {
       })
       .map((str, index) => {
         // TODO: 保留函数/字段注释
-        // TODO: 请求函数参数格式优化，默认不传 undefined
+        // ✅ 请求函数参数格式优化，默认不传 undefined
+        // ✅ 支持中文变量名
         // TODO: 支持直接导出 js + .d.ts 文件 | ts -> js + .d.ts
         // TODO: 支持 mustache 模版
 

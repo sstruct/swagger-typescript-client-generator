@@ -47,21 +47,21 @@ var TypescriptConverter = /** @class */ (function () {
         return parameterTypes.join("\n");
     };
     TypescriptConverter.prototype.generateOperation = function (path, method, operation) {
+        var _a;
         var _this = this;
         var name = this.getNormalizer().normalize(method + "-" + path);
-        var _a = this.getParametersJarFactory().createFromOperation(operation), pathParams = _a.pathParams, queryParams = _a.queryParams, bodyParams = _a.bodyParams, formDataParams = _a.formDataParams, headerParams = _a.headerParams;
+        var _b = this.getParametersJarFactory().createFromOperation(operation), pathParams = _b.pathParams, queryParams = _b.queryParams, bodyParams = _b.bodyParams, formDataParams = _b.formDataParams, headerParams = _b.headerParams;
         var output = "";
         var parameters = pathParams.map(function (parameter) {
             return "" + parameter.name + PARAMETER_PATH_SUFFIX + ": " + _this.generateTypeValue(parameter);
         });
-        var args = [swaggerTypes_1.PARAMETER_TYPE_PATH];
+        var args = (_a = {},
+            _a[swaggerTypes_1.PARAMETER_TYPE_PATH] = true,
+            _a);
         var appendParametersArgs = function (paramsType, params, paramsSuffix) {
             if (_this.settings.allowVoidParameters || params.length > 0) {
                 parameters.push(paramsType + ": " + name + paramsSuffix);
-                args.push(paramsType);
-            }
-            else {
-                args.push(exports.TYPESCRIPT_TYPE_UNDEFINED);
+                args[paramsType] = true;
             }
         };
         appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_QUERY, queryParams, PARAMETERS_QUERY_SUFFIX);
@@ -73,6 +73,7 @@ var TypescriptConverter = /** @class */ (function () {
             var code = _a[0], response = _a[1];
             return _this.generateTypeValue(response);
         })
+            .filter(function (value, index, self) { return self.indexOf(value) === index; })
             .join(" | ") || exports.TYPESCRIPT_TYPE_VOID;
         output += name + " (" + parameters.join(", ") + "): Promise<ApiResponse<" + responseTypes + ">> {\n";
         output += (pathParams.length > 0 ? "let" : "const") + " path = '" + path + "'\n";
@@ -81,7 +82,11 @@ var TypescriptConverter = /** @class */ (function () {
             return "path = path.replace('{" + parameter.name + "}', String(" + parameter.name + PARAMETER_PATH_SUFFIX + "))\n";
         })
             .join("\n");
-        output += "return this.requestFactory(" + args.join(", ") + ", '" + method.toUpperCase() + "', this.configuration)\n";
+        output += "return this.requestFactory({";
+        Object.keys(args).map(function (arg) {
+            output += args[arg] ? arg + "," : "";
+        });
+        output += "\n      method: '" + method.toUpperCase() + "',\n      configuration: this.configuration\n    })";
         output += "}\n";
         return output;
     };
@@ -155,7 +160,7 @@ var TypescriptConverter = /** @class */ (function () {
     };
     TypescriptConverter.prototype.generateClient = function (name) {
         var _this = this;
-        var output = "\n\nexport interface ApiResponse<T> extends Response {\n  json (): Promise<T>\n}\nexport type RequestFactoryType = (path: string, query: any, body: any, formData: any, headers: any, method: string, configuration: any) => Promise<ApiResponse<any>>\n\nexport class " + name + "<T extends {} = {}> {\n  constructor(protected configuration: T, protected requestFactory: RequestFactoryType) {}\n";
+        var output = "\n\nexport interface ApiResponse<T> extends Response {\n  json (): Promise<T>\n}\n\nexport type RequestFactoryType = ({\n  path,\n  query,\n  body,\n  formData,\n  headers,\n  method,\n  configuration,\n}: {\n  path: string;\n  query?: any;\n  body?: any;\n  formData?: any;\n  headers?: any;\n  method: string;\n  configuration: any;\n}) => Promise<ApiResponse<any>>;\n\nexport class " + name + "<T extends {} = {}> {\n  constructor(protected configuration: T, protected requestFactory: RequestFactoryType) {}\n";
         output += Object.entries(this.swagger.paths)
             .map(function (_a) {
             var path = _a[0], methods = _a[1];

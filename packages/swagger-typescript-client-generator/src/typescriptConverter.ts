@@ -4,6 +4,7 @@ import { Normalizer } from "./normalizer"
 import { ParametersArrayToSchemaConverter } from "./parameterArrayToSchemaConverter"
 import { ParametersJarFactory } from "./parametersJarFactory"
 import {
+  ParameterType,
   DEFINITION_TYPE_ARRAY,
   DEFINITION_TYPE_BOOLEAN,
   DEFINITION_TYPE_ENUM,
@@ -125,14 +126,14 @@ export class TypescriptConverter implements BaseConverter {
         (parameter as any) as Schema
       )}`
     })
-    const args: string[] = [PARAMETER_TYPE_PATH]
+    const args: Partial<Record<ParameterType, boolean>> = {
+      [PARAMETER_TYPE_PATH]: true,
+    }
 
     const appendParametersArgs = (paramsType, params, paramsSuffix) => {
       if (this.settings.allowVoidParameters || params.length > 0) {
         parameters.push(`${paramsType}: ${name}${paramsSuffix}`)
-        args.push(paramsType)
-      } else {
-        args.push(TYPESCRIPT_TYPE_UNDEFINED)
+        args[paramsType] = true
       }
     }
 
@@ -162,6 +163,7 @@ export class TypescriptConverter implements BaseConverter {
         .map(([code, response]) => {
           return this.generateTypeValue(response)
         })
+        .filter((value, index, self) => self.indexOf(value) === index)
         .join(" | ") || TYPESCRIPT_TYPE_VOID
 
     output += `${name} (${parameters.join(
@@ -175,9 +177,15 @@ export class TypescriptConverter implements BaseConverter {
       })
       .join("\n")
 
-    output += `return this.requestFactory(${args.join(
-      ", "
-    )}, '${method.toUpperCase()}', this.configuration)\n`
+    output += "return this.requestFactory({"
+    Object.keys(args).map((arg) => {
+      output += args[arg] ? `${arg},` : ""
+    })
+    output += `
+      method: '${method.toUpperCase()}',
+      configuration: this.configuration
+    })`
+
     output += "}\n"
 
     return output
@@ -279,7 +287,24 @@ export class TypescriptConverter implements BaseConverter {
 export interface ApiResponse<T> extends Response {
   json (): Promise<T>
 }
-export type RequestFactoryType = (path: string, query: any, body: any, formData: any, headers: any, method: string, configuration: any) => Promise<ApiResponse<any>>
+
+export type RequestFactoryType = ({
+  path,
+  query,
+  body,
+  formData,
+  headers,
+  method,
+  configuration,
+}: {
+  path: string;
+  query?: any;
+  body?: any;
+  formData?: any;
+  headers?: any;
+  method: string;
+  configuration: any;
+}) => Promise<ApiResponse<any>>;
 
 export class ${name}<T extends {} = {}> {
   constructor(protected configuration: T, protected requestFactory: RequestFactoryType) {}
