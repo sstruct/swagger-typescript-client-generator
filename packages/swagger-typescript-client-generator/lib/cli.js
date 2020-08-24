@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var writerFactory_1 = require("./writer/writerFactory");
 var yargs = require("yargs");
-var commands_1 = require("./commands");
+var writerFactory_1 = require("./writer/writerFactory");
 var readerFactory_1 = require("./fileReader/readerFactory");
+var commands_1 = require("./commands");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 var pkg = require("../package.json");
 var useCommand = function (command) { return function (args) {
@@ -18,27 +18,27 @@ var args = yargs
     type: "string",
     alias: "f",
     description: "swagger file",
-    required: true
+    required: true,
 })
     .option("allowVoidParameterTypes", {
     boolean: true,
     default: false,
-    alias: "a"
+    alias: "a",
 })
     .command("models", "generate models files", function (yargsModels) { return yargsModels; }, useCommand(commands_1.modelsCommand))
     .command("client <name> [importModelsFrom]", "generate client code", function (yargsClient) {
     return yargsClient
         .positional("name", {
-        type: "string"
+        type: "string",
     })
         .positional("importModelsFrom", {
         default: "./model",
-        type: "string"
+        type: "string",
     });
 }, useCommand(commands_1.clientCommand))
     .command("bundle <name>", "generate models and client", function (yarngsBundle) {
     return yarngsBundle.positional("name", {
-        type: "string"
+        type: "string",
     });
 }, useCommand(commands_1.bundleCommand))
     .version(pkg.version)

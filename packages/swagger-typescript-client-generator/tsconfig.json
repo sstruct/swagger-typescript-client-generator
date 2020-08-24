@@ -4,7 +4,8 @@
     "module": "commonjs",
     "declaration": true,
     "rootDir": "src",
-    "outDir": "lib"
+    "outDir": "lib",
+    "preserveWatchOutput": true
   },
   "exclude": ["src/*.test.ts", "src/**/*.test.ts"]
 }

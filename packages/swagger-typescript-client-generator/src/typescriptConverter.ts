@@ -210,9 +210,9 @@ export class TypescriptConverter implements BaseConverter {
 
     switch (definition.type) {
       // ??
-      case DEFINITION_TYPE_ENUM: {
-        return definition.enum.join(" | ")
-      }
+      // case DEFINITION_TYPE_ENUM: {
+      //   return definition.enum.join(" | ")
+      // }
       case DEFINITION_TYPE_STRING:
       case DEFINITION_TYPE_NUMBER:
       case DEFINITION_TYPE_BOOLEAN: {

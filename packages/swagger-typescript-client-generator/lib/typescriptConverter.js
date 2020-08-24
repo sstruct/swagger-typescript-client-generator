@@ -21,7 +21,7 @@ var TypescriptConverter = /** @class */ (function () {
         this.parametersJarFactory = new parametersJarFactory_1.ParametersJarFactory(this.swagger);
         this.parametersArrayToSchemaConverter = new parameterArrayToSchemaConverter_1.ParametersArrayToSchemaConverter();
         this.settings = Object.assign({}, {
-            allowVoidParameters: true
+            allowVoidParameters: true,
         }, settings || {});
     }
     TypescriptConverter.prototype.generateParameterTypesForOperation = function (path, method, operation) {
@@ -55,34 +55,19 @@ var TypescriptConverter = /** @class */ (function () {
             return "" + parameter.name + PARAMETER_PATH_SUFFIX + ": " + _this.generateTypeValue(parameter);
         });
         var args = [swaggerTypes_1.PARAMETER_TYPE_PATH];
-        if (this.settings.allowVoidParameters || queryParams.length > 0) {
-            parameters.push(swaggerTypes_1.PARAMETER_TYPE_QUERY + ": " + name + PARAMETERS_QUERY_SUFFIX);
-            args.push(swaggerTypes_1.PARAMETER_TYPE_QUERY);
-        }
-        else {
-            args.push(exports.TYPESCRIPT_TYPE_UNDEFINED);
-        }
-        if (this.settings.allowVoidParameters || bodyParams.length > 0) {
-            parameters.push(swaggerTypes_1.PARAMETER_TYPE_BODY + ": " + name + PARAMETERS_BODY_SUFFIX);
-            args.push(swaggerTypes_1.PARAMETER_TYPE_BODY);
-        }
-        else {
-            args.push(exports.TYPESCRIPT_TYPE_UNDEFINED);
-        }
-        if (this.settings.allowVoidParameters || formDataParams.length > 0) {
-            parameters.push(swaggerTypes_1.PARAMETER_TYPE_FORM_DATA + ": " + name + PARAMETERS_FORM_DATA_SUFFIX);
-            args.push(swaggerTypes_1.PARAMETER_TYPE_FORM_DATA);
-        }
-        else {
-            args.push(exports.TYPESCRIPT_TYPE_UNDEFINED);
-        }
-        if (this.settings.allowVoidParameters || headerParams.length > 0) {
-            parameters.push(swaggerTypes_1.PARAMETER_TYPE_HEADER + ": " + name + PARAMETERS_HEADER_SUFFIX);
-            args.push(swaggerTypes_1.PARAMETER_TYPE_HEADER);
-        }
-        else {
-            args.push(exports.TYPESCRIPT_TYPE_UNDEFINED);
-        }
+        var appendParametersArgs = function (paramsType, params, paramsSuffix) {
+            if (_this.settings.allowVoidParameters || params.length > 0) {
+                parameters.push(paramsType + ": " + name + paramsSuffix);
+                args.push(paramsType);
+            }
+            else {
+                args.push(exports.TYPESCRIPT_TYPE_UNDEFINED);
+            }
+        };
+        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_QUERY, queryParams, PARAMETERS_QUERY_SUFFIX);
+        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_BODY, bodyParams, PARAMETERS_BODY_SUFFIX);
+        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_FORM_DATA, formDataParams, PARAMETERS_FORM_DATA_SUFFIX);
+        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_HEADER, headerParams, PARAMETERS_HEADER_SUFFIX);
         var responseTypes = Object.entries(operation.responses || {})
             .map(function (_a) {
             var code = _a[0], response = _a[1];
@@ -117,9 +102,10 @@ var TypescriptConverter = /** @class */ (function () {
                 .join(" & ") || exports.TYPESCRIPT_TYPE_VOID);
         }
         switch (definition.type) {
-            case swaggerTypes_1.DEFINITION_TYPE_ENUM: {
-                return definition.enum.join(" | ");
-            }
+            // ??
+            // case DEFINITION_TYPE_ENUM: {
+            //   return definition.enum.join(" | ")
+            // }
             case swaggerTypes_1.DEFINITION_TYPE_STRING:
             case swaggerTypes_1.DEFINITION_TYPE_NUMBER:
             case swaggerTypes_1.DEFINITION_TYPE_BOOLEAN: {
