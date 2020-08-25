@@ -14,15 +14,15 @@ export interface WhatWgFetchRequestFactoryOptions {
 export const WhatWgFetchRequestFactory = (
   baseUrl: string,
   options: WhatWgFetchRequestFactoryOptions
-): RequestFactoryType => (
+): RequestFactoryType => ({
   path,
   query,
   body,
   formData,
   headers,
   method,
-  configuration: never
-) => {
+  configuration: never,
+}) => {
   const headersObject = new Headers(options.requestInit.headers || {})
 
   new Headers(headers).forEach((value, key) => {
@@ -31,7 +31,7 @@ export const WhatWgFetchRequestFactory = (
 
   const fetchOptions: RequestInit = Object.assign({}, options.requestInit, {
     method: method,
-    headers: headersObject
+    headers: headersObject,
   })
 
   if (body && typeof body === "string") {
@@ -50,7 +50,7 @@ export const WhatWgFetchRequestFactory = (
     baseUrl,
     path,
     hasQuery ? (path.includes("?") ? "&" : "?") : "",
-    hasQuery ? serialize(query) : ""
+    hasQuery ? serialize(query) : "",
   ].join("")
 
   const callback: WhatWgFetchFunctionType =

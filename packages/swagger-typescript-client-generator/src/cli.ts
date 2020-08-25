@@ -29,6 +29,11 @@ const args = yargs
     default: false,
     alias: "a",
   })
+  .option("verbose", {
+    alias: "v",
+    type: "boolean",
+    description: "Run with verbose logging",
+  })
   .command(
     "models",
     "generate models files",

@@ -217,10 +217,6 @@ export class TypescriptConverter implements BaseConverter {
     }
 
     switch (definition.type) {
-      // ??
-      // case DEFINITION_TYPE_ENUM: {
-      //   return definition.enum.join(" | ")
-      // }
       case DEFINITION_TYPE_STRING:
       case DEFINITION_TYPE_NUMBER:
       case DEFINITION_TYPE_BOOLEAN: {
@@ -251,6 +247,19 @@ export class TypescriptConverter implements BaseConverter {
         output += Object.entries(definition.properties)
           .map(([name, def]) => {
             const isRequired = (definition.required || []).indexOf(name)
+            // const description = (definition.description || []).indexOf(name)
+            // let property = ""
+            // if (typeof description === "string" && description) {
+            //   property += `
+            //   /**
+            //    * ${description}
+            //    */\n`
+            // }
+            // property += `'${name}'${
+            //   isRequired ? "?" : ""
+            // }: ${this.generateTypeValue(def)}`
+            //
+            // return property
             return `'${name}'${isRequired ? "?" : ""}: ${this.generateTypeValue(
               def
             )}`

@@ -25,6 +25,11 @@ var args = yargs
     default: false,
     alias: "a",
 })
+    .option("verbose", {
+    alias: "v",
+    type: "boolean",
+    description: "Run with verbose logging",
+})
     .command("models", "generate models files", function (yargsModels) { return yargsModels; }, useCommand(commands_1.modelsCommand))
     .command("client <name> [importModelsFrom]", "generate client code", function (yargsClient) {
     return yargsClient

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TypescriptConverter = exports.TYPESCRIPT_TYPE_EMPTY_OBJECT = exports.TYPESCRIPT_TYPE_ANY = exports.TYPESCRIPT_TYPE_VOID = exports.TYPESCRIPT_TYPE_UNDEFINED = void 0;
 var parameterArrayToSchemaConverter_1 = require("./parameterArrayToSchemaConverter");
 var parametersJarFactory_1 = require("./parametersJarFactory");
 var swaggerTypes_1 = require("./swaggerTypes");
@@ -107,10 +108,6 @@ var TypescriptConverter = /** @class */ (function () {
                 .join(" & ") || exports.TYPESCRIPT_TYPE_VOID);
         }
         switch (definition.type) {
-            // ??
-            // case DEFINITION_TYPE_ENUM: {
-            //   return definition.enum.join(" | ")
-            // }
             case swaggerTypes_1.DEFINITION_TYPE_STRING:
             case swaggerTypes_1.DEFINITION_TYPE_NUMBER:
             case swaggerTypes_1.DEFINITION_TYPE_BOOLEAN: {
@@ -136,6 +133,19 @@ var TypescriptConverter = /** @class */ (function () {
                     .map(function (_a) {
                     var name = _a[0], def = _a[1];
                     var isRequired = (definition.required || []).indexOf(name);
+                    // const description = (definition.description || []).indexOf(name)
+                    // let property = ""
+                    // if (typeof description === "string" && description) {
+                    //   property += `
+                    //   /**
+                    //    * ${description}
+                    //    */\n`
+                    // }
+                    // property += `'${name}'${
+                    //   isRequired ? "?" : ""
+                    // }: ${this.generateTypeValue(def)}`
+                    //
+                    // return property
                     return "'" + name + "'" + (isRequired ? "?" : "") + ": " + _this.generateTypeValue(def);
                 })
                     .join("\n");
