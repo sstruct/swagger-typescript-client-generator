@@ -8,9 +8,9 @@ var TypescriptClientGenerator = /** @class */ (function () {
     }
     TypescriptClientGenerator.prototype.generateSingleFile = function (clientName) {
         return [
+            this.generateClient(clientName),
             this.generateModels(),
             this.generateParameterTypesForOperations(),
-            this.generateClient(clientName)
         ].join("\n");
     };
     TypescriptClientGenerator.prototype.generateModels = function () {

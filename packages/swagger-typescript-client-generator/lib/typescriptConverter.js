@@ -74,8 +74,11 @@ var TypescriptConverter = /** @class */ (function () {
             var code = _a[0], response = _a[1];
             return _this.generateTypeValue(response);
         })
-            .filter(function (value, index, self) { return self.indexOf(value) === index; })
+            .filter(function (value, index, self) { return self.indexOf(value) === index && value !== "any"; })
             .join(" | ") || exports.TYPESCRIPT_TYPE_VOID;
+        if (operation.summary) {
+            output += "/** " + operation.summary + " */\n";
+        }
         output += name + " (" + parameters.join(", ") + "): Promise<ApiResponse<" + responseTypes + ">> {\n";
         output += (pathParams.length > 0 ? "let" : "const") + " path = '" + path + "'\n";
         output += pathParams
@@ -132,21 +135,14 @@ var TypescriptConverter = /** @class */ (function () {
                 output += Object.entries(definition.properties)
                     .map(function (_a) {
                     var name = _a[0], def = _a[1];
+                    var output = "";
                     var isRequired = (definition.required || []).indexOf(name);
-                    // const description = (definition.description || []).indexOf(name)
-                    // let property = ""
-                    // if (typeof description === "string" && description) {
-                    //   property += `
-                    //   /**
-                    //    * ${description}
-                    //    */\n`
-                    // }
-                    // property += `'${name}'${
-                    //   isRequired ? "?" : ""
-                    // }: ${this.generateTypeValue(def)}`
-                    //
-                    // return property
-                    return "'" + name + "'" + (isRequired ? "?" : "") + ": " + _this.generateTypeValue(def);
+                    var description = def.description;
+                    if (description) {
+                        output += "/** " + description + " */\n";
+                    }
+                    output += "'" + name + "'" + (isRequired ? "?" : "") + ": " + _this.generateTypeValue(def);
+                    return output;
                 })
                     .join("\n");
                 output += "\n}";
@@ -170,7 +166,7 @@ var TypescriptConverter = /** @class */ (function () {
     };
     TypescriptConverter.prototype.generateClient = function (name) {
         var _this = this;
-        var output = "\n\nexport interface ApiResponse<T> extends Response {\n  json (): Promise<T>\n}\n\nexport type RequestFactoryType = ({\n  path,\n  query,\n  body,\n  formData,\n  headers,\n  method,\n  configuration,\n}: {\n  path: string;\n  query?: any;\n  body?: any;\n  formData?: any;\n  headers?: any;\n  method: string;\n  configuration: any;\n}) => Promise<ApiResponse<any>>;\n\nexport class " + name + "<T extends {} = {}> {\n  constructor(protected configuration: T, protected requestFactory: RequestFactoryType) {}\n";
+        var output = "\n\nexport interface ApiResponse<T> extends Response {\n  json (): Promise<T>\n}\n\nexport type RequestFactoryType = ({\n  path,\n  query,\n  body,\n  formData,\n  headers,\n  method,\n  configuration,\n}: {\n  path: string;\n  query?: any;\n  body?: any;\n  formData?: any;\n  headers?: any;\n  method: string;\n  configuration: any;\n}) => Promise<ApiResponse<any>>;\n\nexport class " + name + "<T extends {} = {}> {\n  constructor(protected configuration: T, protected requestFactory: RequestFactoryType) {}\n\n";
         output += Object.entries(this.swagger.paths)
             .map(function (_a) {
             var path = _a[0], methods = _a[1];

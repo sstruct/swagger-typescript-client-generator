@@ -6,9 +6,9 @@ export class TypescriptClientGenerator {
 
   public generateSingleFile(clientName: string): string {
     return [
+      this.generateClient(clientName),
       this.generateModels(),
       this.generateParameterTypesForOperations(),
-      this.generateClient(clientName)
     ].join("\n")
   }
 
@@ -41,7 +41,7 @@ export class TypescriptClientGenerator {
   public generateImportsFromFile(importPath: string): string {
     const names = []
       .concat(Object.keys(this.swagger.definitions || {}))
-      .map(name => this.converter.getNormalizer().normalize(name))
+      .map((name) => this.converter.getNormalizer().normalize(name))
       .join(",\n  ")
 
     return `import {\n  ${names} \n} from '${importPath}'\n`

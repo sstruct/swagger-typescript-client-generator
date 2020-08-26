@@ -163,9 +163,15 @@ export class TypescriptConverter implements BaseConverter {
         .map(([code, response]) => {
           return this.generateTypeValue(response)
         })
-        .filter((value, index, self) => self.indexOf(value) === index)
+        .filter(
+          (value, index, self) =>
+            self.indexOf(value) === index && value !== "any"
+        )
         .join(" | ") || TYPESCRIPT_TYPE_VOID
 
+    if (operation.summary) {
+      output += `/** ${operation.summary} */\n`
+    }
     output += `${name} (${parameters.join(
       ", "
     )}): Promise<ApiResponse<${responseTypes}>> {\n`
@@ -246,23 +252,16 @@ export class TypescriptConverter implements BaseConverter {
         output += "{\n"
         output += Object.entries(definition.properties)
           .map(([name, def]) => {
+            let output = ""
             const isRequired = (definition.required || []).indexOf(name)
-            // const description = (definition.description || []).indexOf(name)
-            // let property = ""
-            // if (typeof description === "string" && description) {
-            //   property += `
-            //   /**
-            //    * ${description}
-            //    */\n`
-            // }
-            // property += `'${name}'${
-            //   isRequired ? "?" : ""
-            // }: ${this.generateTypeValue(def)}`
-            //
-            // return property
-            return `'${name}'${isRequired ? "?" : ""}: ${this.generateTypeValue(
-              def
-            )}`
+            const description = def.description
+            if (description) {
+              output += `/** ${description} */\n`
+            }
+            output += `'${name}'${
+              isRequired ? "?" : ""
+            }: ${this.generateTypeValue(def)}`
+            return output
           })
           .join("\n")
         output += "\n}"
@@ -317,6 +316,7 @@ export type RequestFactoryType = ({
 
 export class ${name}<T extends {} = {}> {
   constructor(protected configuration: T, protected requestFactory: RequestFactoryType) {}
+
 `
     output += Object.entries(this.swagger.paths)
       .map(([path, methods]) => {
