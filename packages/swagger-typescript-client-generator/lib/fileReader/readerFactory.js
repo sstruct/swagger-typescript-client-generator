@@ -3,9 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.readerFactory = void 0;
 var jsonReader_1 = require("./jsonReader");
 var yamlReader_1 = require("./yamlReader");
+var remoteJsonReader_1 = require("./remoteJsonReader");
 exports.readerFactory = function (options) {
-    if (typeof options.file !== "string") {
-        throw new Error("invalid type for file option, string expected");
+    if (typeof options.file !== "string" &&
+        typeof options.swaggerUrl !== "string") {
+        throw new Error("invalid type for file/swagger_url option, string expected");
+    }
+    if (options.swaggerUrl) {
+        return remoteJsonReader_1.remoteJsonReader;
     }
     if (options.file.endsWith(".json")) {
         return jsonReader_1.jsonReader;

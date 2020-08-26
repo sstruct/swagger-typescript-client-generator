@@ -6,3 +6,5 @@ var modelsCommand_1 = require("./modelsCommand");
 Object.defineProperty(exports, "modelsCommand", { enumerable: true, get: function () { return modelsCommand_1.modelsCommand; } });
 var bundleCommand_1 = require("./bundleCommand");
 Object.defineProperty(exports, "bundleCommand", { enumerable: true, get: function () { return bundleCommand_1.bundleCommand; } });
+var defaultCommand_1 = require("./defaultCommand");
+Object.defineProperty(exports, "defaultCommand", { enumerable: true, get: function () { return defaultCommand_1.defaultCommand; } });

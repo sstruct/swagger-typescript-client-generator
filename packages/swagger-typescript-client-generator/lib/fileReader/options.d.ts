@@ -1,3 +1,4 @@
 export interface FileReaderOptions {
-    file: string;
+    file?: string;
+    swaggerUrl?: string;
 }

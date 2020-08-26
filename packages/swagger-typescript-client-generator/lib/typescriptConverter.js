@@ -74,23 +74,25 @@ var TypescriptConverter = /** @class */ (function () {
             var code = _a[0], response = _a[1];
             return _this.generateTypeValue(response);
         })
-            .filter(function (value, index, self) { return self.indexOf(value) === index && value !== "any"; })
+            .filter(function (value, index, self) {
+            return self.indexOf(value) === index && value !== "any";
+        })
             .join(" | ") || exports.TYPESCRIPT_TYPE_VOID;
         if (operation.summary) {
             output += "/** " + operation.summary + " */\n";
         }
-        output += name + " (" + parameters.join(", ") + "): Promise<ApiResponse<" + responseTypes + ">> {\n";
+        output += "export const " + name + " = (" + parameters.join(", ") + "): Promise<ApiResponse<" + responseTypes + ">> => {\n";
         output += (pathParams.length > 0 ? "let" : "const") + " path = '" + path + "'\n";
         output += pathParams
             .map(function (parameter) {
             return "path = path.replace('{" + parameter.name + "}', String(" + parameter.name + PARAMETER_PATH_SUFFIX + "))\n";
         })
             .join("\n");
-        output += "return this.requestFactory({";
+        output += "return request({";
         Object.keys(args).map(function (arg) {
             output += args[arg] ? arg + "," : "";
         });
-        output += "\n      method: '" + method.toUpperCase() + "',\n      configuration: this.configuration\n    })";
+        output += "\n      method: '" + method.toUpperCase() + "',\n      configuration\n    })";
         output += "}\n";
         return output;
     };
@@ -166,7 +168,7 @@ var TypescriptConverter = /** @class */ (function () {
     };
     TypescriptConverter.prototype.generateClient = function (name) {
         var _this = this;
-        var output = "\n\nexport interface ApiResponse<T> extends Response {\n  json (): Promise<T>\n}\n\nexport type RequestFactoryType = ({\n  path,\n  query,\n  body,\n  formData,\n  headers,\n  method,\n  configuration,\n}: {\n  path: string;\n  query?: any;\n  body?: any;\n  formData?: any;\n  headers?: any;\n  method: string;\n  configuration: any;\n}) => Promise<ApiResponse<any>>;\n\nexport class " + name + "<T extends {} = {}> {\n  constructor(protected configuration: T, protected requestFactory: RequestFactoryType) {}\n\n";
+        var output = "\nimport { WhatWgFetchRequestFactory } from \"swagger-typescript-client-generator-runtime/lib/whatwg-fetch\"\nconst request = WhatWgFetchRequestFactory('retail-mall/admin-web', { requestInit: {} })\nconst configuration = {}\n\nexport interface ApiResponse<T> extends Response {\n  json (): Promise<T>\n}\n\nexport type RequestFactoryType = ({\n  path,\n  query,\n  body,\n  formData,\n  headers,\n  method,\n  configuration,\n}: {\n  path: string;\n  query?: any;\n  body?: any;\n  formData?: any;\n  headers?: any;\n  method: string;\n  configuration: any;\n}) => Promise<ApiResponse<any>>;\n\n";
         output += Object.entries(this.swagger.paths)
             .map(function (_a) {
             var path = _a[0], methods = _a[1];
@@ -178,7 +180,6 @@ var TypescriptConverter = /** @class */ (function () {
                 .join("\n");
         })
             .join("\n");
-        output += "}\n";
         return output;
     };
     TypescriptConverter.prototype.getNormalizer = function () {

@@ -19,6 +19,7 @@
   "dependencies": {
     "@types/swagger-schema-official": "^2.0.21",
     "js-yaml": "^3.13.1",
+    "node-fetch": "^2.6.0",
     "prettier": "^2.0.3",
     "swagger-typescript-client-generator-runtime": "^1.5.3",
     "yargs": "^15.1.0"

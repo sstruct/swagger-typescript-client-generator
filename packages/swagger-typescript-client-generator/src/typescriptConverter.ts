@@ -172,9 +172,9 @@ export class TypescriptConverter implements BaseConverter {
     if (operation.summary) {
       output += `/** ${operation.summary} */\n`
     }
-    output += `${name} (${parameters.join(
+    output += `export const ${name} = (${parameters.join(
       ", "
-    )}): Promise<ApiResponse<${responseTypes}>> {\n`
+    )}): Promise<ApiResponse<${responseTypes}>> => {\n`
     output += `${pathParams.length > 0 ? "let" : "const"} path = '${path}'\n`
 
     output += pathParams
@@ -183,13 +183,13 @@ export class TypescriptConverter implements BaseConverter {
       })
       .join("\n")
 
-    output += "return this.requestFactory({"
+    output += "return request({"
     Object.keys(args).map((arg) => {
       output += args[arg] ? `${arg},` : ""
     })
     output += `
       method: '${method.toUpperCase()}',
-      configuration: this.configuration
+      configuration
     })`
 
     output += "}\n"
@@ -291,6 +291,9 @@ export class TypescriptConverter implements BaseConverter {
 
   public generateClient(name: string): string {
     let output = `
+import { WhatWgFetchRequestFactory } from "swagger-typescript-client-generator-runtime/lib/whatwg-fetch"
+const request = WhatWgFetchRequestFactory('retail-mall/admin-web', { requestInit: {} })
+const configuration = {}
 
 export interface ApiResponse<T> extends Response {
   json (): Promise<T>
@@ -314,9 +317,6 @@ export type RequestFactoryType = ({
   configuration: any;
 }) => Promise<ApiResponse<any>>;
 
-export class ${name}<T extends {} = {}> {
-  constructor(protected configuration: T, protected requestFactory: RequestFactoryType) {}
-
 `
     output += Object.entries(this.swagger.paths)
       .map(([path, methods]) => {
@@ -327,8 +327,6 @@ export class ${name}<T extends {} = {}> {
           .join("\n")
       })
       .join("\n")
-
-    output += "}\n"
     return output
   }
 
