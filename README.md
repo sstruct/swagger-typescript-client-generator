@@ -36,13 +36,13 @@ $ swagger-typescript-client-generator bundle MyApi -f swagger.json > client.ts
 ## TODO
 
 - [x] ✅ 支持单个方法导出（用于 tree shaking 和解构赋值）
-- [ ] 支持配置文件
+- [x] 支持配置文件
   - [x] 配置文件读取
   - [x] 配置文件逻辑
     - [x] swagger_url
     - [x] api prefix 参考 nginx 字段名
     - [x] outDir/targetPath
-    - [ ] template type
+    - [x] template type
     - [ ] later: init command with template
 - [x] 支持 enum
 - [ ] 支持 mustache 模版

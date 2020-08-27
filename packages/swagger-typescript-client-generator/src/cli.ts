@@ -15,32 +15,38 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require("../package.json")
 
+const commandCore = async (command, options) => {
+  const reader = readerFactory({
+    file: options.file,
+    swaggerUrl: options.swaggerUrl,
+  })
+  const spec = (await reader()) as Spec
+  const output = command(spec, {
+    allowVoidParameters: options.allowVoidParameters,
+    gatewayPrefix: options.gatewayPrefix,
+    template: options.template,
+  })
+  const writer = writerFactory({ targetPath: options.targetPath })
+  writer(output)
+}
+
 const useCommand = (command: Command) => (args: CommandOptions) => {
-  const transformSingleFile = async (readerOptions) => {
-    const reader = readerFactory(readerOptions)
-    const spec = (await reader()) as Spec
-    const output = command(spec, {
-      allowVoidParameters: readerOptions.allowVoidParameters,
-      gatewayPrefix: readerOptions.gatewayPrefix,
-    })
-    const writer = writerFactory({ targetPath: readerOptions.targetPath })
-    writer(output)
-  }
   if (typeof args.configFile === "string" && Array.isArray(args.swaggers)) {
     args.swaggers.forEach((swagger) => {
-      transformSingleFile({
-        ...args,
+      commandCore(command, {
         file: swagger.file,
         swaggerUrl: swagger.swagger_url,
         gatewayPrefix: swagger.gatewayPrefix,
         targetPath: swagger.targetPath,
+        template: args.template,
       })
     })
   } else {
-    transformSingleFile({
+    commandCore(command, {
       file: args.file,
       gatewayPrefix: args.gatewayPrefix,
       targetPath: args.targetPath,
+      template: args.template,
     })
   }
 }

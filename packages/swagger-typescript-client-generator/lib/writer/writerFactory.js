@@ -9,7 +9,11 @@ exports.writerFactory = function (options) {
         console.warn("invalid targetPath, string expected");
     }
     if (options.targetPath) {
-        return function (output) { return prettierWriterComposite_1.prettierWriterComposite(fsWriter_1.fsWriter)(output, options); };
+        return function (output, customOptions) {
+            return prettierWriterComposite_1.prettierWriterComposite(fsWriter_1.fsWriter)(output, customOptions || options);
+        };
     }
-    return function (output) { return prettierWriterComposite_1.prettierWriterComposite(stdoutWriter_1.stdoutWriter)(output, options); };
+    return function (output, customOptions) {
+        return prettierWriterComposite_1.prettierWriterComposite(stdoutWriter_1.stdoutWriter)(output, customOptions || options);
+    };
 };

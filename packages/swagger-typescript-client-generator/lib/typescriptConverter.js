@@ -24,6 +24,7 @@ var TypescriptConverter = /** @class */ (function () {
         this.settings = Object.assign({}, {
             allowVoidParameters: true,
             gatewayPrefix: "",
+            template: "WhatWgFetchRequestFactory",
         }, settings || {});
     }
     TypescriptConverter.prototype.generateParameterTypesForOperation = function (path, method, operation) {
@@ -82,7 +83,7 @@ var TypescriptConverter = /** @class */ (function () {
         if (operation.summary) {
             output += "/** " + operation.summary + " */\n";
         }
-        output += "export const " + name + " = (" + parameters.join(", ") + "): Promise<ApiResponse<" + responseTypes + ">> => {\n";
+        output += "export const " + name + " = (" + parameters.join(", ") + "): Promise<APIResponse<" + responseTypes + ">> => {\n";
         output += (pathParams.length > 0 ? "let" : "const") + " path = '" + (this.settings.gatewayPrefix ? "/" + this.settings.gatewayPrefix : "") + path + "'\n";
         output += pathParams
             .map(function (parameter) {
@@ -174,7 +175,11 @@ var TypescriptConverter = /** @class */ (function () {
     };
     TypescriptConverter.prototype.generateClient = function (name) {
         var _this = this;
-        var output = "\nimport { WhatWgFetchRequestFactory } from \"swagger-typescript-client-generator-runtime/lib/whatwg-fetch\"\nconst request = WhatWgFetchRequestFactory('retail-mall/admin-web', { requestInit: {} })\nconst configuration = {}\n\nexport interface ApiResponse<T> extends Response {\n  json (): Promise<T>\n}\n\nexport type RequestFactoryType = ({\n  path,\n  query,\n  body,\n  formData,\n  headers,\n  method,\n  configuration,\n}: {\n  path: string;\n  query?: any;\n  body?: any;\n  formData?: any;\n  headers?: any;\n  method: string;\n  configuration: any;\n}) => Promise<ApiResponse<any>>;\n\n";
+        var output = "";
+        if (this.settings.template === "WhatWgFetchRequestFactory") {
+            output += "import { WhatWgFetchRequestFactory as requestFactory } from \"swagger-typescript-client-generator-runtime/lib/whatwg-fetch\"\n";
+        }
+        output += "const request = requestFactory('retail-mall/admin-web', { requestInit: {} })\nconst configuration = {}\n\nexport interface APIResponse<T> extends Response {\n  json (): Promise<T>\n}\n\nexport type RequestFactoryType = ({\n  path,\n  query,\n  body,\n  formData,\n  headers,\n  method,\n  configuration,\n}: {\n  path: string;\n  query?: any;\n  body?: any;\n  formData?: any;\n  headers?: any;\n  method: string;\n  configuration: any;\n}) => Promise<APIResponse<any>>;\n\n";
         output += Object.entries(this.swagger.paths)
             .map(function (_a) {
             var path = _a[0], methods = _a[1];

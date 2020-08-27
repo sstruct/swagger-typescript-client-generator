@@ -35,6 +35,8 @@ export interface SwaggerToTypescriptConverterSettings {
   allowVoidParameters?: boolean
   gatewayPrefix?: string
   targetPath?: string
+  // template name or custom template path
+  template?: "WhatWgFetchRequestFactory" | "superagent" | string
 }
 
 export class TypescriptConverter implements BaseConverter {
@@ -53,6 +55,7 @@ export class TypescriptConverter implements BaseConverter {
       {
         allowVoidParameters: true,
         gatewayPrefix: "",
+        template: "WhatWgFetchRequestFactory",
       },
       settings || {}
     )
@@ -177,7 +180,7 @@ export class TypescriptConverter implements BaseConverter {
     }
     output += `export const ${name} = (${parameters.join(
       ", "
-    )}): Promise<ApiResponse<${responseTypes}>> => {\n`
+    )}): Promise<APIResponse<${responseTypes}>> => {\n`
 
     output += `${pathParams.length > 0 ? "let" : "const"} path = '${
       this.settings.gatewayPrefix ? `/${this.settings.gatewayPrefix}` : ""
@@ -301,12 +304,14 @@ export class TypescriptConverter implements BaseConverter {
   }
 
   public generateClient(name: string): string {
-    let output = `
-import { WhatWgFetchRequestFactory } from "swagger-typescript-client-generator-runtime/lib/whatwg-fetch"
-const request = WhatWgFetchRequestFactory('retail-mall/admin-web', { requestInit: {} })
+    let output = ""
+    if (this.settings.template === "WhatWgFetchRequestFactory") {
+      output += `import { WhatWgFetchRequestFactory as requestFactory } from "swagger-typescript-client-generator-runtime/lib/whatwg-fetch"\n`
+    }
+    output += `const request = requestFactory('retail-mall/admin-web', { requestInit: {} })
 const configuration = {}
 
-export interface ApiResponse<T> extends Response {
+export interface APIResponse<T> extends Response {
   json (): Promise<T>
 }
 
@@ -326,7 +331,7 @@ export type RequestFactoryType = ({
   headers?: any;
   method: string;
   configuration: any;
-}) => Promise<ApiResponse<any>>;
+}) => Promise<APIResponse<any>>;
 
 `
     output += Object.entries(this.swagger.paths)
