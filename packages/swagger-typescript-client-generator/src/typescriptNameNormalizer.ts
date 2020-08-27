@@ -15,8 +15,7 @@ export class TypescriptNameNormalizer implements Normalizer {
         return segment
       })
       .map((str, index) => {
-        // 排除"（），。,."等标点，需要后端改。暂时处理成 any，ref:
-        // 替换所有非字母/字符/数字字符为 ""，如果替换后结果为 ""，返回 "any"
+        // remove punctuations in name, e.g.:  "（），。,.", return "any" if nothing left
         // ref 1. https://stackoverflow.com/a/6671856/5121972
         // ref 2. http://www.regular-expressions.info/unicode.html#category
         return str.replace(/[^\p{L}\p{N}]*/gu, "") || "any"

@@ -2,8 +2,12 @@ import * as yargs from "yargs"
 import { ConfigType } from "../fileReader/fileReader"
 
 export interface CliCommandOptions {
-  file: string
-  allowVoidParameterTypes: boolean
+  allowVoidParameterTypes?: boolean
+  configFile?: string
+  file?: string
+  gatewayPrefix?: string
+  targetPath?: string
 }
 
-export type CommandOptions = CliCommandOptions & yargs.Arguments<ConfigType>
+export type CommandOptions = CliCommandOptions &
+  Partial<yargs.Arguments<ConfigType>>

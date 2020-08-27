@@ -6,10 +6,13 @@ export type FileReader<T = Spec> = (options: FileReaderOptions) => T
 export type ConfigType = {
   swaggers: {
     swagger_url: string
-    alias: string
+    file?: string
+    gatewayPrefix?: string
     backend: string
+    alias: string
     // tags:
     target_path: string
+    targetPath: string
   }[]
   // api client 生成的类型. 现在仅支持 js ts
   target_language: "ts" | "js"

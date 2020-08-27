@@ -16,19 +16,32 @@ import {
 const pkg = require("../package.json")
 
 const useCommand = (command: Command) => (args: CommandOptions) => {
-  const generateSingleFile = async (readerOptions) => {
+  const transformSingleFile = async (readerOptions) => {
     const reader = readerFactory(readerOptions)
     const spec = (await reader()) as Spec
-    const output = command(spec, args)
-    const writer = writerFactory(args)
-    writer(output, args)
+    const output = command(spec, {
+      allowVoidParameters: readerOptions.allowVoidParameters,
+      gatewayPrefix: readerOptions.gatewayPrefix,
+    })
+    const writer = writerFactory({ targetPath: readerOptions.targetPath })
+    writer(output)
   }
-  if (Array.isArray(args.swaggers)) {
+  if (typeof args.configFile === "string" && Array.isArray(args.swaggers)) {
     args.swaggers.forEach((swagger) => {
-      generateSingleFile({ swaggerUrl: swagger.swagger_url })
+      transformSingleFile({
+        ...args,
+        file: swagger.file,
+        swaggerUrl: swagger.swagger_url,
+        gatewayPrefix: swagger.gatewayPrefix,
+        targetPath: swagger.targetPath,
+      })
     })
   } else {
-    generateSingleFile({ file: args.file })
+    transformSingleFile({
+      file: args.file,
+      gatewayPrefix: args.gatewayPrefix,
+      targetPath: args.targetPath,
+    })
   }
 }
 
@@ -45,6 +58,12 @@ const args = yargs
     boolean: true,
     default: false,
     alias: "a",
+  })
+  .option("file", {
+    type: "string",
+    alias: "f",
+    description: "swagger file",
+    required: false,
   })
   .command(
     "$0",

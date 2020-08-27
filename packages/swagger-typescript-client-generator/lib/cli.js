@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -43,40 +54,53 @@ var commands_1 = require("./commands");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 var pkg = require("../package.json");
 var useCommand = function (command) { return function (args) {
-    if (Array.isArray(args.swaggers)) {
-        args.swaggers.forEach(function (swagger) { return __awaiter(void 0, void 0, void 0, function () {
-            var reader, spec, output, writer;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        reader = readerFactory_1.readerFactory({ swaggerUrl: swagger.swagger_url });
-                        return [4 /*yield*/, reader()];
-                    case 1:
-                        spec = _a.sent();
-                        output = command(spec, args);
-                        writer = writerFactory_1.writerFactory(args);
-                        writer(output, args);
-                        return [2 /*return*/];
-                }
-            });
-        }); });
+    var transformSingleFile = function (readerOptions) { return __awaiter(void 0, void 0, void 0, function () {
+        var reader, spec, output, writer;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    reader = readerFactory_1.readerFactory(readerOptions);
+                    return [4 /*yield*/, reader()];
+                case 1:
+                    spec = (_a.sent());
+                    output = command(spec, {
+                        allowVoidParameters: readerOptions.allowVoidParameters,
+                        gatewayPrefix: readerOptions.gatewayPrefix,
+                    });
+                    writer = writerFactory_1.writerFactory(__assign(__assign({}, args), { targetPath: readerOptions.targetPath }));
+                    writer(output);
+                    return [2 /*return*/];
+            }
+        });
+    }); };
+    if (typeof args.configFile === "string" && Array.isArray(args.swaggers)) {
+        args.swaggers.forEach(function (swagger) {
+            transformSingleFile(__assign(__assign({}, args), { file: swagger.file, swaggerUrl: swagger.swagger_url, gatewayPrefix: swagger.gatewayPrefix, targetPath: swagger.targetPath }));
+        });
     }
     else {
-        var reader = readerFactory_1.readerFactory(args);
-        var spec = reader();
-        var output = command(spec, args);
-        var writer = writerFactory_1.writerFactory(args);
-        writer(output, args);
+        transformSingleFile({
+            file: args.file,
+            gatewayPrefix: args.gatewayPrefix,
+            targetPath: args.targetPath,
+        });
     }
 }; };
 var args = yargs
     .config("configFile", "Jarvis config file path, default: .jarvis.yml", function (file) {
-    return readerFactory_1.readerFactory({ file: file })();
+    var reader = readerFactory_1.readerFactory({ file: file });
+    return reader();
 })
     .option("allowVoidParameterTypes", {
     boolean: true,
     default: false,
     alias: "a",
+})
+    .option("file", {
+    type: "string",
+    alias: "f",
+    description: "swagger file",
+    required: false,
 })
     .command("$0", "generate models and client", function (yargsBundle) { return yargsBundle; }, useCommand(commands_1.defaultCommand))
     // .command(

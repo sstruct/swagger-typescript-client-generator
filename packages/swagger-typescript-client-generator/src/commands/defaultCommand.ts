@@ -4,18 +4,19 @@ import { Spec } from "swagger-schema-official"
 import { TypescriptClientGenerator } from "../typescriptClientGenerator"
 import { TypescriptConverter } from "../typescriptConverter"
 
-interface BundleCommandOptions extends CommandOptions {
+interface DefaultCommandOptions extends CommandOptions {
   name: string
 }
 
-export const defaultCommand: Command<BundleCommandOptions> = (
+export const defaultCommand: Command<DefaultCommandOptions> = (
   swagger: Spec,
-  options: BundleCommandOptions
+  options: DefaultCommandOptions
 ) => {
   const generator = new TypescriptClientGenerator(
     swagger,
     new TypescriptConverter(swagger, {
       allowVoidParameters: options.allowVoidParameterTypes,
+      gatewayPrefix: options.gatewayPrefix,
     })
   )
   return generator.generateSingleFile(options.name)

@@ -23,6 +23,7 @@ var TypescriptConverter = /** @class */ (function () {
         this.parametersArrayToSchemaConverter = new parameterArrayToSchemaConverter_1.ParametersArrayToSchemaConverter();
         this.settings = Object.assign({}, {
             allowVoidParameters: true,
+            gatewayPrefix: "",
         }, settings || {});
     }
     TypescriptConverter.prototype.generateParameterTypesForOperation = function (path, method, operation) {
@@ -82,7 +83,7 @@ var TypescriptConverter = /** @class */ (function () {
             output += "/** " + operation.summary + " */\n";
         }
         output += "export const " + name + " = (" + parameters.join(", ") + "): Promise<ApiResponse<" + responseTypes + ">> => {\n";
-        output += (pathParams.length > 0 ? "let" : "const") + " path = '" + path + "'\n";
+        output += (pathParams.length > 0 ? "let" : "const") + " path = '" + (this.settings.gatewayPrefix ? "/" + this.settings.gatewayPrefix : "") + path + "'\n";
         output += pathParams
             .map(function (parameter) {
             return "path = path.replace('{" + parameter.name + "}', String(" + parameter.name + PARAMETER_PATH_SUFFIX + "))\n";
@@ -113,7 +114,12 @@ var TypescriptConverter = /** @class */ (function () {
                 .join(" & ") || exports.TYPESCRIPT_TYPE_VOID);
         }
         switch (definition.type) {
-            case swaggerTypes_1.DEFINITION_TYPE_STRING:
+            case swaggerTypes_1.DEFINITION_TYPE_STRING: {
+                if (definition.enum) {
+                    return "'" + definition.enum.join("' | '") + "'";
+                }
+                return definition.type;
+            }
             case swaggerTypes_1.DEFINITION_TYPE_NUMBER:
             case swaggerTypes_1.DEFINITION_TYPE_BOOLEAN: {
                 return definition.type;

@@ -4,9 +4,12 @@ export declare type FileReader<T = Spec> = (options: FileReaderOptions) => T;
 export declare type ConfigType = {
     swaggers: {
         swagger_url: string;
-        alias: string;
+        file?: string;
+        gatewayPrefix?: string;
         backend: string;
+        alias: string;
         target_path: string;
+        targetPath: string;
     }[];
     target_language: "ts" | "js";
     template: "fetch" | "superagent";

@@ -9,6 +9,8 @@ export declare const TYPESCRIPT_TYPE_ANY = "any";
 export declare const TYPESCRIPT_TYPE_EMPTY_OBJECT = "{}";
 export interface SwaggerToTypescriptConverterSettings {
     allowVoidParameters?: boolean;
+    gatewayPrefix?: string;
+    targetPath?: string;
 }
 export declare class TypescriptConverter implements BaseConverter {
     protected swagger: Spec;

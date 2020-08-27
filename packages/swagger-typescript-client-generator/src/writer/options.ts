@@ -1,1 +1,3 @@
-export type WriterOptions = any
+export type WriterOptions = {
+  targetPath?: string
+}

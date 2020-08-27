@@ -33,6 +33,8 @@ const PARAMETERS_HEADER_SUFFIX = "HeaderParameters"
 
 export interface SwaggerToTypescriptConverterSettings {
   allowVoidParameters?: boolean
+  gatewayPrefix?: string
+  targetPath?: string
 }
 
 export class TypescriptConverter implements BaseConverter {
@@ -50,6 +52,7 @@ export class TypescriptConverter implements BaseConverter {
       {},
       {
         allowVoidParameters: true,
+        gatewayPrefix: "",
       },
       settings || {}
     )
@@ -175,7 +178,10 @@ export class TypescriptConverter implements BaseConverter {
     output += `export const ${name} = (${parameters.join(
       ", "
     )}): Promise<ApiResponse<${responseTypes}>> => {\n`
-    output += `${pathParams.length > 0 ? "let" : "const"} path = '${path}'\n`
+
+    output += `${pathParams.length > 0 ? "let" : "const"} path = '${
+      this.settings.gatewayPrefix ? `/${this.settings.gatewayPrefix}` : ""
+    }${path}'\n`
 
     output += pathParams
       .map((parameter) => {
@@ -223,7 +229,12 @@ export class TypescriptConverter implements BaseConverter {
     }
 
     switch (definition.type) {
-      case DEFINITION_TYPE_STRING:
+      case DEFINITION_TYPE_STRING: {
+        if (definition.enum) {
+          return `'${definition.enum.join("' | '")}'`
+        }
+        return definition.type
+      }
       case DEFINITION_TYPE_NUMBER:
       case DEFINITION_TYPE_BOOLEAN: {
         return definition.type

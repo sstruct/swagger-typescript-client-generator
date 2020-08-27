@@ -1,7 +1,7 @@
 import { Command } from "./command";
 import { CommandOptions } from "./options";
-interface BundleCommandOptions extends CommandOptions {
+interface DefaultCommandOptions extends CommandOptions {
     name: string;
 }
-export declare const defaultCommand: Command<BundleCommandOptions>;
+export declare const defaultCommand: Command<DefaultCommandOptions>;
 export {};
