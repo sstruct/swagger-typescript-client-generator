@@ -10,13 +10,13 @@ exports.readerFactory = function (options) {
         throw new Error("invalid type for file/swagger_url option, string expected");
     }
     if (options.swaggerUrl) {
-        return remoteJsonReader_1.remoteJsonReader;
+        return function () { return remoteJsonReader_1.remoteJsonReader(options); };
     }
     if (options.file.endsWith(".json")) {
-        return jsonReader_1.jsonReader;
+        return function () { return jsonReader_1.jsonReader(options); };
     }
     if (options.file.endsWith(".yml") || options.file.endsWith(".yaml")) {
-        return yamlReader_1.yamlReader;
+        return function () { return yamlReader_1.yamlReader(options); };
     }
     throw new Error("cannot create reader for " + options.file + ". Supported formats: json");
 };

@@ -1,5 +1,6 @@
 import { FileReaderOptions } from "./options";
-export declare type FileReader<T> = (options: FileReaderOptions) => T;
+import { Spec } from "swagger-schema-official";
+export declare type FileReader<T = Spec> = (options: FileReaderOptions) => T;
 export declare type ConfigType = {
     swaggers: {
         swagger_url: string;

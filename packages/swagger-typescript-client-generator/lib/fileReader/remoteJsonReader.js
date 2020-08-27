@@ -43,17 +43,13 @@ exports.remoteJsonReader = function (options) { return __awaiter(void 0, void 0,
     var content;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                console.log("options.swaggerUrl: ", options.swaggerUrl);
-                return [4 /*yield*/, node_fetch_1.default(options.swaggerUrl)
-                        .then(function (res) { return res.json(); })
-                        .then(function (json) {
-                        console.log(json);
-                        return json;
-                    })];
+            case 0: return [4 /*yield*/, node_fetch_1.default(options.swaggerUrl)
+                    .then(function (res) { return res.json(); })
+                    .then(function (json) {
+                    return json;
+                })];
             case 1:
                 content = _a.sent();
-                console.log("content: ", content);
                 return [2 /*return*/, content];
         }
     });

@@ -4,16 +4,15 @@ import { FileReader } from "./fileReader"
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
-export const remoteJsonReader: FileReader<any> = async <T extends unknown>(
+export const remoteJsonReader: FileReader<any> = async <
+  T extends unknown = any
+>(
   options: FileReaderOptions
 ): Promise<T> => {
-  console.log("options.swaggerUrl: ", options.swaggerUrl)
   const content = await fetch(options.swaggerUrl)
     .then((res) => res.json())
     .then((json) => {
-      console.log(json)
       return json
     })
-  console.log("content: ", content)
   return content as T
 }

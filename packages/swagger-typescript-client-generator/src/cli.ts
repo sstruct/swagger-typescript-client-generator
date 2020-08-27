@@ -3,42 +3,44 @@ import { Spec } from "swagger-schema-official"
 import { Command } from "./commands/command"
 import { writerFactory } from "./writer/writerFactory"
 import { readerFactory } from "./fileReader/readerFactory"
+import { ConfigType } from "./fileReader/fileReader"
+import { CommandOptions } from "./commands/options"
 import {
   defaultCommand,
   bundleCommand,
   clientCommand,
   modelsCommand,
 } from "./commands"
-import { ConfigType } from "./fileReader/fileReader"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require("../package.json")
 
-const useCommand = (command: Command) => (args: yargs.Arguments<any>) => {
-  if (Array.isArray(args.swaggers)) {
-    args.swaggers.forEach((swagger) => {
-      console.log("swagger: ", swagger)
-      const reader = readerFactory({ swaggerUrl: swagger.swagger_url })
-      const spec = reader({ swaggerUrl: swagger.swagger_url }) as Spec
-      // const output = command(spec, args)
-      // const writer = writerFactory(args)
-      // writer(output, args)
-    })
-  } else {
-    const reader = readerFactory(args)
-    const spec = reader(args) as Spec
+const useCommand = (command: Command) => (args: CommandOptions) => {
+  const generateSingleFile = async (readerOptions) => {
+    const reader = readerFactory(readerOptions)
+    const spec = (await reader()) as Spec
     const output = command(spec, args)
     const writer = writerFactory(args)
     writer(output, args)
   }
+  if (Array.isArray(args.swaggers)) {
+    args.swaggers.forEach((swagger) => {
+      generateSingleFile({ swaggerUrl: swagger.swagger_url })
+    })
+  } else {
+    generateSingleFile({ file: args.file })
+  }
 }
 
 const args = yargs
-  .config("configFile", "Jarvis config file path[.jarvis.yml]", (file) => {
-    const reader = readerFactory({ file })
-    const config = reader({ file }) as ConfigType
-    return config
-  })
+  .config(
+    "configFile",
+    "Jarvis config file path, default: .jarvis.yml",
+    (file) => {
+      const reader = readerFactory({ file })
+      return reader() as ConfigType
+    }
+  )
   .option("allowVoidParameterTypes", {
     boolean: true,
     default: false,
@@ -47,10 +49,7 @@ const args = yargs
   .command(
     "$0",
     "generate models and client",
-    (yargsBundle) =>
-      yargsBundle.positional("name", {
-        type: "string",
-      }),
+    (yargsBundle) => yargsBundle,
     useCommand(defaultCommand)
   )
   // .command(

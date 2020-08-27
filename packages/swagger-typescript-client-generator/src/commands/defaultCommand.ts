@@ -12,13 +12,11 @@ export const defaultCommand: Command<BundleCommandOptions> = (
   swagger: Spec,
   options: BundleCommandOptions
 ) => {
-  console.log("options: ", options)
-  // const generator = new TypescriptClientGenerator(
-  //   swagger,
-  //   new TypescriptConverter(swagger, {
-  //     allowVoidParameters: options.allowVoidParameterTypes
-  //   })
-  // )
-  return "str"
-  // return generator.generateSingleFile(options.name)
+  const generator = new TypescriptClientGenerator(
+    swagger,
+    new TypescriptConverter(swagger, {
+      allowVoidParameters: options.allowVoidParameterTypes,
+    })
+  )
+  return generator.generateSingleFile(options.name)
 }

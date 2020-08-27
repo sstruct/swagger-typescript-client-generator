@@ -12,15 +12,15 @@ export const readerFactory = (options: FileReaderOptions) => {
   }
 
   if (options.swaggerUrl) {
-    return remoteJsonReader
+    return () => remoteJsonReader(options)
   }
 
   if (options.file.endsWith(".json")) {
-    return jsonReader
+    return () => jsonReader(options)
   }
 
   if (options.file.endsWith(".yml") || options.file.endsWith(".yaml")) {
-    return yamlReader
+    return () => yamlReader(options)
   }
 
   throw new Error(

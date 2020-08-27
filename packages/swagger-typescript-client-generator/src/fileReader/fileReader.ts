@@ -1,7 +1,7 @@
 import { FileReaderOptions } from "./options"
 import { Spec } from "swagger-schema-official"
 
-export type FileReader<T> = (options: FileReaderOptions) => T
+export type FileReader<T = Spec> = (options: FileReaderOptions) => T
 
 export type ConfigType = {
   swaggers: {

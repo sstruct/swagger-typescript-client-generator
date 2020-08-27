@@ -1,14 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defaultCommand = void 0;
+var typescriptClientGenerator_1 = require("../typescriptClientGenerator");
+var typescriptConverter_1 = require("../typescriptConverter");
 exports.defaultCommand = function (swagger, options) {
-    console.log("options: ", options);
-    // const generator = new TypescriptClientGenerator(
-    //   swagger,
-    //   new TypescriptConverter(swagger, {
-    //     allowVoidParameters: options.allowVoidParameterTypes
-    //   })
-    // )
-    return "str";
-    // return generator.generateSingleFile(options.name)
+    var generator = new typescriptClientGenerator_1.TypescriptClientGenerator(swagger, new typescriptConverter_1.TypescriptConverter(swagger, {
+        allowVoidParameters: options.allowVoidParameterTypes
+    }));
+    return generator.generateSingleFile(options.name);
 };
