@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TypescriptConverter = exports.TYPESCRIPT_TYPE_EMPTY_OBJECT = exports.TYPESCRIPT_TYPE_ANY = exports.TYPESCRIPT_TYPE_VOID = exports.TYPESCRIPT_TYPE_UNDEFINED = void 0;
+var Mustache = require("mustache");
+var templates_1 = require("./templates");
 var parameterArrayToSchemaConverter_1 = require("./parameterArrayToSchemaConverter");
 var parametersJarFactory_1 = require("./parametersJarFactory");
 var swaggerTypes_1 = require("./swaggerTypes");
@@ -80,22 +82,26 @@ var TypescriptConverter = /** @class */ (function () {
             return self.indexOf(value) === index && value !== "any";
         })
             .join(" | ") || exports.TYPESCRIPT_TYPE_VOID;
-        if (operation.summary) {
-            output += "/** " + operation.summary + " */\n";
-        }
-        output += "export const " + name + " = (" + parameters.join(", ") + "): Promise<APIResponse<" + responseTypes + ">> => {\n";
-        output += (pathParams.length > 0 ? "let" : "const") + " path = '" + (this.settings.gatewayPrefix ? "/" + this.settings.gatewayPrefix : "") + path + "'\n";
-        output += pathParams
-            .map(function (parameter) {
-            return "path = path.replace('{" + parameter.name + "}', String(" + parameter.name + PARAMETER_PATH_SUFFIX + "))\n";
-        })
-            .join("\n");
-        output += "return request({";
-        Object.keys(args).map(function (arg) {
-            output += args[arg] ? arg + "," : "";
+        var requestArgs = "";
+        Object.keys(args).forEach(function (arg) {
+            requestArgs += args[arg] ? arg + "," : "";
         });
-        output += "\n      method: '" + method.toUpperCase() + "',\n      configuration\n    })";
-        output += "}\n";
+        var pathReplace = "";
+        pathReplace += pathParams.map(function (parameter) {
+            return "path = path.replace('{" + parameter.name + "}', String(" + parameter.name + PARAMETER_PATH_SUFFIX + "))";
+        });
+        output += Mustache.render(templates_1.readerTemplate("singleMethod"), {
+            summary: operation.summary || false,
+            name: name,
+            parameters: parameters.join(", "),
+            requestArgs: requestArgs,
+            path: this.settings.gatewayPrefix
+                ? "/" + this.settings.gatewayPrefix + path
+                : path,
+            pathReplace: pathReplace,
+            method: method.toUpperCase(),
+            responseTypes: responseTypes,
+        });
         return output;
     };
     TypescriptConverter.prototype.generateType = function (name, definition) {
@@ -176,10 +182,10 @@ var TypescriptConverter = /** @class */ (function () {
     TypescriptConverter.prototype.generateClient = function (name) {
         var _this = this;
         var output = "";
-        if (this.settings.template === "WhatWgFetchRequestFactory") {
-            output += "import { WhatWgFetchRequestFactory as requestFactory } from \"swagger-typescript-client-generator-runtime/lib/whatwg-fetch\"\n";
-        }
-        output += "const request = requestFactory('retail-mall/admin-web', { requestInit: {} })\nconst configuration = {}\n\nexport interface APIResponse<T> extends Response {\n  json (): Promise<T>\n}\n\nexport type RequestFactoryType = ({\n  path,\n  query,\n  body,\n  formData,\n  headers,\n  method,\n  configuration,\n}: {\n  path: string;\n  query?: any;\n  body?: any;\n  formData?: any;\n  headers?: any;\n  method: string;\n  configuration: any;\n}) => Promise<APIResponse<any>>;\n\n";
+        output += Mustache.render(templates_1.readerTemplate("methodModule"), {
+            RequestFactoryName: "WhatWgFetchRequestFactory",
+        });
+        output += "\n";
         output += Object.entries(this.swagger.paths)
             .map(function (_a) {
             var path = _a[0], methods = _a[1];

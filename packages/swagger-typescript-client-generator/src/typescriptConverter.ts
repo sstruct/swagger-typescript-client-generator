@@ -1,8 +1,11 @@
+import * as Mustache from "mustache"
+import { readerTemplate } from "./templates"
 import { Operation, Schema, Spec } from "swagger-schema-official"
 import { BaseConverter } from "./baseConverter"
 import { Normalizer } from "./normalizer"
 import { ParametersArrayToSchemaConverter } from "./parameterArrayToSchemaConverter"
 import { ParametersJarFactory } from "./parametersJarFactory"
+
 import {
   ParameterType,
   DEFINITION_TYPE_ARRAY,
@@ -175,33 +178,28 @@ export class TypescriptConverter implements BaseConverter {
         )
         .join(" | ") || TYPESCRIPT_TYPE_VOID
 
-    if (operation.summary) {
-      output += `/** ${operation.summary} */\n`
-    }
-    output += `export const ${name} = (${parameters.join(
-      ", "
-    )}): Promise<APIResponse<${responseTypes}>> => {\n`
-
-    output += `${pathParams.length > 0 ? "let" : "const"} path = '${
-      this.settings.gatewayPrefix ? `/${this.settings.gatewayPrefix}` : ""
-    }${path}'\n`
-
-    output += pathParams
-      .map((parameter) => {
-        return `path = path.replace('{${parameter.name}}', String(${parameter.name}${PARAMETER_PATH_SUFFIX}))\n`
-      })
-      .join("\n")
-
-    output += "return request({"
-    Object.keys(args).map((arg) => {
-      output += args[arg] ? `${arg},` : ""
+    let requestArgs = ""
+    Object.keys(args).forEach((arg) => {
+      requestArgs += args[arg] ? `${arg},` : ""
     })
-    output += `
-      method: '${method.toUpperCase()}',
-      configuration
-    })`
 
-    output += "}\n"
+    let pathReplace = ""
+    pathReplace += pathParams.map((parameter) => {
+      return `path = path.replace('{${parameter.name}}', String(${parameter.name}${PARAMETER_PATH_SUFFIX}))`
+    })
+
+    output += Mustache.render(readerTemplate("singleMethod"), {
+      summary: operation.summary || false,
+      name,
+      parameters: parameters.join(", "),
+      requestArgs,
+      path: this.settings.gatewayPrefix
+        ? `/${this.settings.gatewayPrefix}${path}`
+        : path,
+      pathReplace,
+      method: method.toUpperCase(),
+      responseTypes,
+    })
 
     return output
   }
@@ -305,35 +303,10 @@ export class TypescriptConverter implements BaseConverter {
 
   public generateClient(name: string): string {
     let output = ""
-    if (this.settings.template === "WhatWgFetchRequestFactory") {
-      output += `import { WhatWgFetchRequestFactory as requestFactory } from "swagger-typescript-client-generator-runtime/lib/whatwg-fetch"\n`
-    }
-    output += `const request = requestFactory('retail-mall/admin-web', { requestInit: {} })
-const configuration = {}
-
-export interface APIResponse<T> extends Response {
-  json (): Promise<T>
-}
-
-export type RequestFactoryType = ({
-  path,
-  query,
-  body,
-  formData,
-  headers,
-  method,
-  configuration,
-}: {
-  path: string;
-  query?: any;
-  body?: any;
-  formData?: any;
-  headers?: any;
-  method: string;
-  configuration: any;
-}) => Promise<APIResponse<any>>;
-
-`
+    output += Mustache.render(readerTemplate("methodModule"), {
+      RequestFactoryName: "WhatWgFetchRequestFactory",
+    })
+    output += "\n"
     output += Object.entries(this.swagger.paths)
       .map(([path, methods]) => {
         return Object.entries(methods)

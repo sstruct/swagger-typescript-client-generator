@@ -4,6 +4,7 @@ exports.readerFactory = void 0;
 var jsonReader_1 = require("./jsonReader");
 var yamlReader_1 = require("./yamlReader");
 var remoteJsonReader_1 = require("./remoteJsonReader");
+var plainTextReader_1 = require("./plainTextReader");
 exports.readerFactory = function (options) {
     if (typeof options.file !== "string" &&
         typeof options.swaggerUrl !== "string") {
@@ -18,5 +19,8 @@ exports.readerFactory = function (options) {
     if (options.file.endsWith(".yml") || options.file.endsWith(".yaml")) {
         return function () { return yamlReader_1.yamlReader(options); };
     }
-    throw new Error("cannot create reader for " + options.file + ". Supported formats: json");
+    if (options.file.endsWith(".mustache")) {
+        return function () { return plainTextReader_1.plainTextReader(options); };
+    }
+    throw new Error("cannot create reader for " + options.file + ". Supported formats: json, yml, yaml, mustache");
 };

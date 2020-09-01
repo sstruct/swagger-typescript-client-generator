@@ -2,6 +2,7 @@ import { FileReaderOptions } from "./options"
 import { jsonReader } from "./jsonReader"
 import { yamlReader } from "./yamlReader"
 import { remoteJsonReader } from "./remoteJsonReader"
+import { plainTextReader } from "./plainTextReader"
 
 export const readerFactory = (options: FileReaderOptions) => {
   if (
@@ -23,7 +24,11 @@ export const readerFactory = (options: FileReaderOptions) => {
     return () => yamlReader(options)
   }
 
+  if (options.file.endsWith(".mustache")) {
+    return () => plainTextReader(options)
+  }
+
   throw new Error(
-    `cannot create reader for ${options.file}. Supported formats: json`
+    `cannot create reader for ${options.file}. Supported formats: json, yml, yaml, mustache`
   )
 }

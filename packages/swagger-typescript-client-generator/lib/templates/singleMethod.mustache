@@ -1,0 +1,10 @@
+{{#summary}}
+/** {{{summary}}} */
+{{/summary}}
+export const {{name}} = ({{parameters}}): Promise<APIResponse<{{{responseTypes}}}>> => {
+  let path = '{{{path}}}'
+  {{#pathReplace}}
+  {{{pathReplace}}}
+  {{/pathReplace}}
+  return request({ {{requestArgs}} method: '{{method}}', configuration })
+}
