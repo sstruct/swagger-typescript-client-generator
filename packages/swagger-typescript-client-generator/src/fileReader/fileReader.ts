@@ -28,4 +28,6 @@ export type ConfigType = {
   gateway_url: string
   // models存放的文件夹
   modelFolder: boolean
+  // 请求参数（path param, query, body, formData) 是否合并到一起，默认为 false
+  mergeParam?: boolean
 }

@@ -5,12 +5,7 @@ import { writerFactory } from "./writer/writerFactory"
 import { readerFactory } from "./fileReader/readerFactory"
 import { ConfigType } from "./fileReader/fileReader"
 import { CommandOptions } from "./commands/options"
-import {
-  defaultCommand,
-  bundleCommand,
-  clientCommand,
-  modelsCommand,
-} from "./commands"
+import { defaultCommand, bundleCommand } from "./commands"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require("../package.json")
@@ -20,11 +15,13 @@ const commandCore = async (command, options) => {
     file: options.file,
     swaggerUrl: options.swaggerUrl,
   })
+
   const spec = (await reader()) as Spec
   const output = command(spec, {
     allowVoidParameters: options.allowVoidParameters,
     gatewayPrefix: options.gatewayPrefix,
     template: options.template,
+    mergeParam: options.mergeParam,
   })
   const writer = writerFactory({ targetPath: options.targetPath })
   writer(output)
@@ -39,6 +36,7 @@ const useCommand = (command: Command) => (args: CommandOptions) => {
         gatewayPrefix: swagger.gatewayPrefix,
         targetPath: swagger.targetPath,
         template: args.template,
+        mergeParam: args.mergeParam,
       })
     })
   } else {
@@ -47,6 +45,7 @@ const useCommand = (command: Command) => (args: CommandOptions) => {
       gatewayPrefix: args.gatewayPrefix,
       targetPath: args.targetPath,
       template: args.template,
+      mergeParam: args.mergeParam,
     })
   }
 }
@@ -77,26 +76,6 @@ const args = yargs
     (yargsBundle) => yargsBundle,
     useCommand(defaultCommand)
   )
-  // .command(
-  //   "models",
-  //   "generate models files",
-  //   (yargsModels) => yargsModels,
-  //   useCommand(modelsCommand)
-  // )
-  // .command(
-  //   "client <name> [importModelsFrom]",
-  //   "generate client code",
-  //   (yargsClient) =>
-  //     yargsClient
-  //       .positional("name", {
-  //         type: "string",
-  //       })
-  //       .positional("importModelsFrom", {
-  //         default: "./model",
-  //         type: "string",
-  //       }),
-  //   useCommand(clientCommand)
-  // )
   // .command(
   //   "bundle <name>",
   //   "generate models and client",

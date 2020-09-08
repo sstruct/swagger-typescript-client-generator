@@ -8,12 +8,29 @@ var ParametersJarFactory = /** @class */ (function () {
     }
     ParametersJarFactory.prototype.createFromOperation = function (operation) {
         return {
+            payloadParams: this.getOperationParameters(operation),
             pathParams: this.getOperationParametersByType(operation, swaggerTypes_1.PARAMETER_TYPE_PATH),
             queryParams: this.getOperationParametersByType(operation, swaggerTypes_1.PARAMETER_TYPE_QUERY),
             bodyParams: this.getOperationParametersByType(operation, swaggerTypes_1.PARAMETER_TYPE_BODY),
             formDataParams: this.getOperationParametersByType(operation, swaggerTypes_1.PARAMETER_TYPE_FORM_DATA),
-            headerParams: this.getOperationParametersByType(operation, swaggerTypes_1.PARAMETER_TYPE_HEADER)
+            headerParams: this.getOperationParametersByType(operation, swaggerTypes_1.PARAMETER_TYPE_HEADER),
         };
+    };
+    ParametersJarFactory.prototype.getOperationParameters = function (operation) {
+        var parameters = this.mapParameters(operation);
+        var authorization = this.mapAuthorization(operation);
+        return []
+            .concat(parameters)
+            .concat(authorization)
+            .filter(function (parameter) {
+            return parameter &&
+                [
+                    swaggerTypes_1.PARAMETER_TYPE_PATH,
+                    swaggerTypes_1.PARAMETER_TYPE_QUERY,
+                    swaggerTypes_1.PARAMETER_TYPE_BODY,
+                    swaggerTypes_1.PARAMETER_TYPE_BODY,
+                ].includes(parameter.in);
+        });
     };
     ParametersJarFactory.prototype.getOperationParametersByType = function (operation, type) {
         var parameters = this.mapParameters(operation);

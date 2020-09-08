@@ -18,4 +18,5 @@ export declare type ConfigType = {
     need_mock: boolean;
     gateway_url: string;
     modelFolder: boolean;
+    mergeParam?: boolean;
 };

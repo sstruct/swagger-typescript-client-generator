@@ -7,6 +7,8 @@ exports.defaultCommand = function (swagger, options) {
     var generator = new typescriptClientGenerator_1.TypescriptClientGenerator(swagger, new typescriptConverter_1.TypescriptConverter(swagger, {
         allowVoidParameters: options.allowVoidParameterTypes,
         gatewayPrefix: options.gatewayPrefix,
+        template: options.template,
+        mergeParam: options.mergeParam,
     }));
     return generator.generateSingleFile(options.name);
 };

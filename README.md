@@ -46,11 +46,11 @@ $ swagger-typescript-client-generator bundle MyApi -f swagger.json > client.ts
     - [ ] later: init command with template
 - [x] 支持 enum
 - [x] 支持 mustache 模版
-- [ ] 支持模块分拆（包括相同类型提取）
+- [ ] 支持 superagent runtime
 - [ ] 函数参数格式兼容目前（Param in url）
   - [ ] path.replace 抽象到方法内（大概能少几千行代码）
 - [ ] 自动/批量替换当前接口
-- [ ] 支持 superagent runtime
+- [ ] 支持模块分拆（包括相同类型提取）
 - [ ] 支持更新提示
 - [ ] 支持 mock?
 - [x] ✅ 生成 client API/type 顺序调整

@@ -5,6 +5,7 @@ export declare class ParametersJarFactory {
     protected swagger: Spec;
     constructor(swagger: Spec);
     createFromOperation(operation: Operation): ParametersJar;
+    protected getOperationParameters(operation: Operation): Parameter[];
     protected getOperationParametersByType(operation: Operation, type: ParameterType): Parameter[];
     protected mapParameters(operation: Operation): (import("swagger-schema-official").BodyParameter | (import("swagger-schema-official").BaseParameter & import("swagger-schema-official").GenericFormat & import("swagger-schema-official").BaseSchema & {
         in: "query";

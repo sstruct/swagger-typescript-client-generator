@@ -5,4 +5,5 @@ export interface ParametersJar {
     bodyParams: Parameter[];
     formDataParams: Parameter[];
     headerParams: Parameter[];
+    payloadParams: Parameter[];
 }

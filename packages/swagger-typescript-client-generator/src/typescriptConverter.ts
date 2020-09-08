@@ -20,6 +20,7 @@ import {
   PARAMETER_TYPE_HEADER,
   PARAMETER_TYPE_PATH,
   PARAMETER_TYPE_QUERY,
+  PARAMETER_TYPE_PAYLOAD,
 } from "./swaggerTypes"
 import { TypescriptNameNormalizer } from "./typescriptNameNormalizer"
 
@@ -33,6 +34,7 @@ const PARAMETERS_QUERY_SUFFIX = "QueryParameters"
 const PARAMETERS_BODY_SUFFIX = "BodyParameters"
 const PARAMETERS_FORM_DATA_SUFFIX = "FormDataParameters"
 const PARAMETERS_HEADER_SUFFIX = "HeaderParameters"
+const PARAMETERS_PAYLOAD_SUFFIX = "PayloadParameters"
 
 export interface SwaggerToTypescriptConverterSettings {
   allowVoidParameters?: boolean
@@ -40,6 +42,7 @@ export interface SwaggerToTypescriptConverterSettings {
   targetPath?: string
   // template name or custom template path
   template?: "WhatWgFetchRequestFactory" | "superagent" | string
+  mergeParam?: boolean
 }
 
 export class TypescriptConverter implements BaseConverter {
@@ -59,6 +62,7 @@ export class TypescriptConverter implements BaseConverter {
         allowVoidParameters: true,
         gatewayPrefix: "",
         template: "WhatWgFetchRequestFactory",
+        mergeParam: false,
       },
       settings || {}
     )
@@ -76,41 +80,27 @@ export class TypescriptConverter implements BaseConverter {
       bodyParams,
       formDataParams,
       headerParams,
+      payloadParams,
     } = this.getParametersJarFactory().createFromOperation(operation)
 
     const parameterTypes: string[] = []
 
-    if (this.settings.allowVoidParameters || queryParams.length > 0) {
-      const schema = this.getParametersArrayToSchemaConverter().convertToObject(
-        queryParams
-      )
-      parameterTypes.push(
-        this.generateType(name + PARAMETERS_QUERY_SUFFIX, schema)
-      )
+    const appendParameterTypes = (params, suffix): void => {
+      if (this.settings.allowVoidParameters || params.length > 0) {
+        const schema = this.getParametersArrayToSchemaConverter().convertToObject(
+          params
+        )
+        parameterTypes.push(this.generateType(name + suffix, schema))
+      }
     }
-    if (this.settings.allowVoidParameters || bodyParams.length > 0) {
-      const schema = this.getParametersArrayToSchemaConverter().convertToUnion(
-        bodyParams
-      )
-      parameterTypes.push(
-        this.generateType(name + PARAMETERS_BODY_SUFFIX, schema)
-      )
-    }
-    if (this.settings.allowVoidParameters || formDataParams.length > 0) {
-      const schema = this.getParametersArrayToSchemaConverter().convertToUnion(
-        formDataParams
-      )
-      parameterTypes.push(
-        this.generateType(name + PARAMETERS_FORM_DATA_SUFFIX, schema)
-      )
-    }
-    if (this.settings.allowVoidParameters || headerParams.length > 0) {
-      const schema = this.getParametersArrayToSchemaConverter().convertToObject(
-        headerParams
-      )
-      parameterTypes.push(
-        this.generateType(name + PARAMETERS_HEADER_SUFFIX, schema)
-      )
+
+    if (this.settings.mergeParam) {
+      appendParameterTypes(payloadParams, PARAMETERS_PAYLOAD_SUFFIX)
+    } else {
+      appendParameterTypes(queryParams, PARAMETERS_QUERY_SUFFIX)
+      appendParameterTypes(bodyParams, PARAMETERS_BODY_SUFFIX)
+      appendParameterTypes(formDataParams, PARAMETERS_FORM_DATA_SUFFIX)
+      appendParameterTypes(headerParams, PARAMETERS_HEADER_SUFFIX)
     }
 
     return parameterTypes.join("\n")
@@ -119,6 +109,7 @@ export class TypescriptConverter implements BaseConverter {
   public generateOperation(path: string, method: string, operation: Operation) {
     const name = this.getNormalizer().normalize(`${method}-${path}`)
     const {
+      payloadParams,
       pathParams,
       queryParams,
       bodyParams,
@@ -128,15 +119,20 @@ export class TypescriptConverter implements BaseConverter {
 
     let output = ""
 
-    const parameters: string[] = pathParams.map((parameter) => {
-      return `${
-        parameter.name
-      }${PARAMETER_PATH_SUFFIX}: ${this.generateTypeValue(
-        (parameter as any) as Schema
-      )}`
-    })
+    let parameters: string[] = []
+
+    if (!this.settings.mergeParam) {
+      parameters = pathParams.map((parameter) => {
+        return `${
+          parameter.name
+        }${PARAMETER_PATH_SUFFIX}: ${this.generateTypeValue(
+          (parameter as any) as Schema
+        )}`
+      })
+    }
+
     const args: Partial<Record<ParameterType, boolean>> = {
-      [PARAMETER_TYPE_PATH]: true,
+      // [PARAMETER_TYPE_PATH]: true,
     }
 
     const appendParametersArgs = (paramsType, params, paramsSuffix) => {
@@ -146,26 +142,34 @@ export class TypescriptConverter implements BaseConverter {
       }
     }
 
-    appendParametersArgs(
-      PARAMETER_TYPE_QUERY,
-      queryParams,
-      PARAMETERS_QUERY_SUFFIX
-    )
-    appendParametersArgs(
-      PARAMETER_TYPE_BODY,
-      bodyParams,
-      PARAMETERS_BODY_SUFFIX
-    )
-    appendParametersArgs(
-      PARAMETER_TYPE_FORM_DATA,
-      formDataParams,
-      PARAMETERS_FORM_DATA_SUFFIX
-    )
-    appendParametersArgs(
-      PARAMETER_TYPE_HEADER,
-      headerParams,
-      PARAMETERS_HEADER_SUFFIX
-    )
+    if (this.settings.mergeParam) {
+      appendParametersArgs(
+        PARAMETER_TYPE_PAYLOAD,
+        payloadParams,
+        PARAMETERS_PAYLOAD_SUFFIX
+      )
+    } else {
+      appendParametersArgs(
+        PARAMETER_TYPE_QUERY,
+        queryParams,
+        PARAMETERS_QUERY_SUFFIX
+      )
+      appendParametersArgs(
+        PARAMETER_TYPE_BODY,
+        bodyParams,
+        PARAMETERS_BODY_SUFFIX
+      )
+      appendParametersArgs(
+        PARAMETER_TYPE_FORM_DATA,
+        formDataParams,
+        PARAMETERS_FORM_DATA_SUFFIX
+      )
+      appendParametersArgs(
+        PARAMETER_TYPE_HEADER,
+        headerParams,
+        PARAMETERS_HEADER_SUFFIX
+      )
+    }
 
     const responseTypes =
       Object.entries(operation.responses || {})
@@ -178,25 +182,26 @@ export class TypescriptConverter implements BaseConverter {
         )
         .join(" | ") || TYPESCRIPT_TYPE_VOID
 
-    let requestArgs = ""
-    Object.keys(args).forEach((arg) => {
-      requestArgs += args[arg] ? `${arg},` : ""
-    })
-
-    let pathReplace = ""
-    pathReplace += pathParams.map((parameter) => {
-      return `path = path.replace('{${parameter.name}}', String(${parameter.name}${PARAMETER_PATH_SUFFIX}))`
-    })
-
     output += Mustache.render(readerTemplate("singleMethod"), {
+      // method summary
       summary: operation.summary || false,
+      // method name
       name,
+      // method parameters
       parameters: parameters.join(", "),
-      requestArgs,
+      // request arguments(payload | query, body, formData)
+      requestArgs: Object.keys(args).filter((arg) => args[arg]),
+      // define path keyword const/let
+      definePath: pathParams.length > 0 ? "let" : "const",
+      // base path
       path: this.settings.gatewayPrefix
         ? `/${this.settings.gatewayPrefix}${path}`
         : path,
-      pathReplace,
+      pathParams,
+      // decorate path params' name with curly braces
+      pathParamName: function () {
+        return `{${this.name}}`
+      },
       method: method.toUpperCase(),
       responseTypes,
     })

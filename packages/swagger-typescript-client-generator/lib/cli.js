@@ -58,6 +58,7 @@ var commandCore = function (command, options) { return __awaiter(void 0, void 0,
                     allowVoidParameters: options.allowVoidParameters,
                     gatewayPrefix: options.gatewayPrefix,
                     template: options.template,
+                    mergeParam: options.mergeParam,
                 });
                 writer = writerFactory_1.writerFactory({ targetPath: options.targetPath });
                 writer(output);
@@ -74,6 +75,7 @@ var useCommand = function (command) { return function (args) {
                 gatewayPrefix: swagger.gatewayPrefix,
                 targetPath: swagger.targetPath,
                 template: args.template,
+                mergeParam: args.mergeParam,
             });
         });
     }
@@ -83,6 +85,7 @@ var useCommand = function (command) { return function (args) {
             gatewayPrefix: args.gatewayPrefix,
             targetPath: args.targetPath,
             template: args.template,
+            mergeParam: args.mergeParam
         });
     }
 }; };
@@ -103,26 +106,6 @@ var args = yargs
     required: false,
 })
     .command("$0", "generate models and client", function (yargsBundle) { return yargsBundle; }, useCommand(commands_1.defaultCommand))
-    // .command(
-    //   "models",
-    //   "generate models files",
-    //   (yargsModels) => yargsModels,
-    //   useCommand(modelsCommand)
-    // )
-    // .command(
-    //   "client <name> [importModelsFrom]",
-    //   "generate client code",
-    //   (yargsClient) =>
-    //     yargsClient
-    //       .positional("name", {
-    //         type: "string",
-    //       })
-    //       .positional("importModelsFrom", {
-    //         default: "./model",
-    //         type: "string",
-    //       }),
-    //   useCommand(clientCommand)
-    // )
     // .command(
     //   "bundle <name>",
     //   "generate models and client",

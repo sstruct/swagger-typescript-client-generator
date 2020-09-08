@@ -16,6 +16,7 @@ var PARAMETERS_QUERY_SUFFIX = "QueryParameters";
 var PARAMETERS_BODY_SUFFIX = "BodyParameters";
 var PARAMETERS_FORM_DATA_SUFFIX = "FormDataParameters";
 var PARAMETERS_HEADER_SUFFIX = "HeaderParameters";
+var PARAMETERS_PAYLOAD_SUFFIX = "PayloadParameters";
 var TypescriptConverter = /** @class */ (function () {
     function TypescriptConverter(swagger, settings) {
         this.swagger = swagger;
@@ -27,52 +28,60 @@ var TypescriptConverter = /** @class */ (function () {
             allowVoidParameters: true,
             gatewayPrefix: "",
             template: "WhatWgFetchRequestFactory",
+            mergeParam: false,
         }, settings || {});
     }
     TypescriptConverter.prototype.generateParameterTypesForOperation = function (path, method, operation) {
+        var _this = this;
         var name = this.getNormalizer().normalize(method + "-" + path);
-        var _a = this.getParametersJarFactory().createFromOperation(operation), queryParams = _a.queryParams, bodyParams = _a.bodyParams, formDataParams = _a.formDataParams, headerParams = _a.headerParams;
+        var _a = this.getParametersJarFactory().createFromOperation(operation), queryParams = _a.queryParams, bodyParams = _a.bodyParams, formDataParams = _a.formDataParams, headerParams = _a.headerParams, payloadParams = _a.payloadParams;
         var parameterTypes = [];
-        if (this.settings.allowVoidParameters || queryParams.length > 0) {
-            var schema = this.getParametersArrayToSchemaConverter().convertToObject(queryParams);
-            parameterTypes.push(this.generateType(name + PARAMETERS_QUERY_SUFFIX, schema));
+        var appendParameterTypes = function (params, suffix) {
+            if (_this.settings.allowVoidParameters || params.length > 0) {
+                var schema = _this.getParametersArrayToSchemaConverter().convertToObject(params);
+                parameterTypes.push(_this.generateType(name + suffix, schema));
+            }
+        };
+        if (this.settings.mergeParam) {
+            appendParameterTypes(payloadParams, PARAMETERS_PAYLOAD_SUFFIX);
         }
-        if (this.settings.allowVoidParameters || bodyParams.length > 0) {
-            var schema = this.getParametersArrayToSchemaConverter().convertToUnion(bodyParams);
-            parameterTypes.push(this.generateType(name + PARAMETERS_BODY_SUFFIX, schema));
-        }
-        if (this.settings.allowVoidParameters || formDataParams.length > 0) {
-            var schema = this.getParametersArrayToSchemaConverter().convertToUnion(formDataParams);
-            parameterTypes.push(this.generateType(name + PARAMETERS_FORM_DATA_SUFFIX, schema));
-        }
-        if (this.settings.allowVoidParameters || headerParams.length > 0) {
-            var schema = this.getParametersArrayToSchemaConverter().convertToObject(headerParams);
-            parameterTypes.push(this.generateType(name + PARAMETERS_HEADER_SUFFIX, schema));
+        else {
+            appendParameterTypes(queryParams, PARAMETERS_QUERY_SUFFIX);
+            appendParameterTypes(bodyParams, PARAMETERS_BODY_SUFFIX);
+            appendParameterTypes(formDataParams, PARAMETERS_FORM_DATA_SUFFIX);
+            appendParameterTypes(headerParams, PARAMETERS_HEADER_SUFFIX);
         }
         return parameterTypes.join("\n");
     };
     TypescriptConverter.prototype.generateOperation = function (path, method, operation) {
-        var _a;
         var _this = this;
         var name = this.getNormalizer().normalize(method + "-" + path);
-        var _b = this.getParametersJarFactory().createFromOperation(operation), pathParams = _b.pathParams, queryParams = _b.queryParams, bodyParams = _b.bodyParams, formDataParams = _b.formDataParams, headerParams = _b.headerParams;
+        var _a = this.getParametersJarFactory().createFromOperation(operation), payloadParams = _a.payloadParams, pathParams = _a.pathParams, queryParams = _a.queryParams, bodyParams = _a.bodyParams, formDataParams = _a.formDataParams, headerParams = _a.headerParams;
         var output = "";
-        var parameters = pathParams.map(function (parameter) {
-            return "" + parameter.name + PARAMETER_PATH_SUFFIX + ": " + _this.generateTypeValue(parameter);
-        });
-        var args = (_a = {},
-            _a[swaggerTypes_1.PARAMETER_TYPE_PATH] = true,
-            _a);
+        var parameters = [];
+        if (!this.settings.mergeParam) {
+            parameters = pathParams.map(function (parameter) {
+                return "" + parameter.name + PARAMETER_PATH_SUFFIX + ": " + _this.generateTypeValue(parameter);
+            });
+        }
+        var args = {
+        // [PARAMETER_TYPE_PATH]: true,
+        };
         var appendParametersArgs = function (paramsType, params, paramsSuffix) {
             if (_this.settings.allowVoidParameters || params.length > 0) {
                 parameters.push(paramsType + ": " + name + paramsSuffix);
                 args[paramsType] = true;
             }
         };
-        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_QUERY, queryParams, PARAMETERS_QUERY_SUFFIX);
-        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_BODY, bodyParams, PARAMETERS_BODY_SUFFIX);
-        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_FORM_DATA, formDataParams, PARAMETERS_FORM_DATA_SUFFIX);
-        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_HEADER, headerParams, PARAMETERS_HEADER_SUFFIX);
+        if (this.settings.mergeParam) {
+            appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_PAYLOAD, payloadParams, PARAMETERS_PAYLOAD_SUFFIX);
+        }
+        else {
+            appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_QUERY, queryParams, PARAMETERS_QUERY_SUFFIX);
+            appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_BODY, bodyParams, PARAMETERS_BODY_SUFFIX);
+            appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_FORM_DATA, formDataParams, PARAMETERS_FORM_DATA_SUFFIX);
+            appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_HEADER, headerParams, PARAMETERS_HEADER_SUFFIX);
+        }
         var responseTypes = Object.entries(operation.responses || {})
             .map(function (_a) {
             var code = _a[0], response = _a[1];
@@ -82,23 +91,26 @@ var TypescriptConverter = /** @class */ (function () {
             return self.indexOf(value) === index && value !== "any";
         })
             .join(" | ") || exports.TYPESCRIPT_TYPE_VOID;
-        var requestArgs = "";
-        Object.keys(args).forEach(function (arg) {
-            requestArgs += args[arg] ? arg + "," : "";
-        });
-        var pathReplace = "";
-        pathReplace += pathParams.map(function (parameter) {
-            return "path = path.replace('{" + parameter.name + "}', String(" + parameter.name + PARAMETER_PATH_SUFFIX + "))";
-        });
         output += Mustache.render(templates_1.readerTemplate("singleMethod"), {
+            // method summary
             summary: operation.summary || false,
+            // method name
             name: name,
+            // method parameters
             parameters: parameters.join(", "),
-            requestArgs: requestArgs,
+            // request arguments(payload | query, body, formData)
+            requestArgs: Object.keys(args).filter(function (arg) { return args[arg]; }),
+            // define path keyword const/let
+            definePath: pathParams.length > 0 ? "let" : "const",
+            // base path
             path: this.settings.gatewayPrefix
                 ? "/" + this.settings.gatewayPrefix + path
                 : path,
-            pathReplace: pathReplace,
+            pathParams: pathParams,
+            // decorate path params' name with curly braces
+            pathParamName: function () {
+                return "{" + this.name + "}";
+            },
             method: method.toUpperCase(),
             responseTypes: responseTypes,
         });

@@ -6,7 +6,7 @@ import {
   PARAMETER_TYPE_HEADER,
   PARAMETER_TYPE_PATH,
   PARAMETER_TYPE_QUERY,
-  ParameterType
+  ParameterType,
 } from "./swaggerTypes"
 
 export class ParametersJarFactory {
@@ -14,6 +14,7 @@ export class ParametersJarFactory {
 
   public createFromOperation(operation: Operation): ParametersJar {
     return {
+      payloadParams: this.getOperationParameters(operation),
       pathParams: this.getOperationParametersByType(
         operation,
         PARAMETER_TYPE_PATH
@@ -33,8 +34,26 @@ export class ParametersJarFactory {
       headerParams: this.getOperationParametersByType(
         operation,
         PARAMETER_TYPE_HEADER
-      )
+      ),
     }
+  }
+
+  protected getOperationParameters(operation: Operation): Parameter[] {
+    const parameters = this.mapParameters(operation)
+    const authorization = this.mapAuthorization(operation)
+    return []
+      .concat(parameters)
+      .concat(authorization)
+      .filter(
+        (parameter: Parameter) =>
+          parameter &&
+          [
+            PARAMETER_TYPE_PATH,
+            PARAMETER_TYPE_QUERY,
+            PARAMETER_TYPE_BODY,
+            PARAMETER_TYPE_BODY,
+          ].includes(parameter.in)
+      )
   }
 
   protected getOperationParametersByType(

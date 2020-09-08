@@ -12,6 +12,7 @@ export interface SwaggerToTypescriptConverterSettings {
     gatewayPrefix?: string;
     targetPath?: string;
     template?: "WhatWgFetchRequestFactory" | "superagent" | string;
+    mergeParam?: boolean;
 }
 export declare class TypescriptConverter implements BaseConverter {
     protected swagger: Spec;
