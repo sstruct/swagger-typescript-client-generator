@@ -11,7 +11,7 @@ export interface WhatWgFetchRequestFactoryOptions {
   fetch?: WhatWgFetchFunctionType
 }
 
-export const WhatWgFetchRequestFactory = (
+const WhatWgFetchRequestFactory = (
   baseUrl: string,
   options: WhatWgFetchRequestFactoryOptions
 ): RequestFactoryType => ({
@@ -58,3 +58,5 @@ export const WhatWgFetchRequestFactory = (
 
   return callback(fullUrl, fetchOptions)
 }
+
+export default WhatWgFetchRequestFactory

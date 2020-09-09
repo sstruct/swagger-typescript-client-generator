@@ -9,10 +9,11 @@ export declare const TYPESCRIPT_TYPE_ANY = "any";
 export declare const TYPESCRIPT_TYPE_EMPTY_OBJECT = "{}";
 export interface SwaggerToTypescriptConverterSettings {
     allowVoidParameters?: boolean;
-    gatewayPrefix?: string;
+    backend?: string;
     targetPath?: string;
-    template?: "WhatWgFetchRequestFactory" | "superagent" | string;
+    template?: "whatwg-fetch" | "superagent-request" | string;
     mergeParam?: boolean;
+    customAgent?: string;
 }
 export declare class TypescriptConverter implements BaseConverter {
     protected swagger: Spec;

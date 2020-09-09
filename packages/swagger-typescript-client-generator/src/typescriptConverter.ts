@@ -38,11 +38,12 @@ const PARAMETERS_PAYLOAD_SUFFIX = "PayloadParameters"
 
 export interface SwaggerToTypescriptConverterSettings {
   allowVoidParameters?: boolean
-  gatewayPrefix?: string
+  backend?: string
   targetPath?: string
   // template name or custom template path
-  template?: "WhatWgFetchRequestFactory" | "superagent" | string
+  template?: "whatwg-fetch" | "superagent-request" | string
   mergeParam?: boolean
+  customAgent?: string
 }
 
 export class TypescriptConverter implements BaseConverter {
@@ -60,8 +61,8 @@ export class TypescriptConverter implements BaseConverter {
       {},
       {
         allowVoidParameters: true,
-        gatewayPrefix: "",
-        template: "WhatWgFetchRequestFactory",
+        backend: "",
+        template: "superagent-request",
         mergeParam: false,
       },
       settings || {}
@@ -121,6 +122,8 @@ export class TypescriptConverter implements BaseConverter {
 
     let parameters: string[] = []
 
+    const payloadIn: { [key: string]: string[] } = {}
+
     if (!this.settings.mergeParam) {
       parameters = pathParams.map((parameter) => {
         return `${
@@ -137,8 +140,17 @@ export class TypescriptConverter implements BaseConverter {
 
     const appendParametersArgs = (paramsType, params, paramsSuffix) => {
       if (this.settings.allowVoidParameters || params.length > 0) {
-        parameters.push(`${paramsType}: ${name}${paramsSuffix}`)
-        args[paramsType] = true
+        if (this.settings.mergeParam) {
+          if (paramsType === PARAMETER_TYPE_PAYLOAD) {
+            parameters.push(`${paramsType}: ${name}${paramsSuffix}`)
+            args[paramsType] = true
+          } else {
+            payloadIn[paramsType] = params.map((param) => param.name)
+          }
+        } else {
+          parameters.push(`${paramsType}: ${name}${paramsSuffix}`)
+          args[paramsType] = true
+        }
       }
     }
 
@@ -148,28 +160,28 @@ export class TypescriptConverter implements BaseConverter {
         payloadParams,
         PARAMETERS_PAYLOAD_SUFFIX
       )
-    } else {
-      appendParametersArgs(
-        PARAMETER_TYPE_QUERY,
-        queryParams,
-        PARAMETERS_QUERY_SUFFIX
-      )
-      appendParametersArgs(
-        PARAMETER_TYPE_BODY,
-        bodyParams,
-        PARAMETERS_BODY_SUFFIX
-      )
-      appendParametersArgs(
-        PARAMETER_TYPE_FORM_DATA,
-        formDataParams,
-        PARAMETERS_FORM_DATA_SUFFIX
-      )
-      appendParametersArgs(
-        PARAMETER_TYPE_HEADER,
-        headerParams,
-        PARAMETERS_HEADER_SUFFIX
-      )
     }
+
+    appendParametersArgs(
+      PARAMETER_TYPE_QUERY,
+      queryParams,
+      PARAMETERS_QUERY_SUFFIX
+    )
+    appendParametersArgs(
+      PARAMETER_TYPE_BODY,
+      bodyParams,
+      PARAMETERS_BODY_SUFFIX
+    )
+    appendParametersArgs(
+      PARAMETER_TYPE_FORM_DATA,
+      formDataParams,
+      PARAMETERS_FORM_DATA_SUFFIX
+    )
+    appendParametersArgs(
+      PARAMETER_TYPE_HEADER,
+      headerParams,
+      PARAMETERS_HEADER_SUFFIX
+    )
 
     const responseTypes =
       Object.entries(operation.responses || {})
@@ -189,14 +201,14 @@ export class TypescriptConverter implements BaseConverter {
       name,
       // method parameters
       parameters: parameters.join(", "),
+      payloadIn: Object.keys(payloadIn).length
+        ? JSON.stringify(payloadIn)
+        : undefined,
       // request arguments(payload | query, body, formData)
       requestArgs: Object.keys(args).filter((arg) => args[arg]),
       // define path keyword const/let
       definePath: pathParams.length > 0 ? "let" : "const",
-      // base path
-      path: this.settings.gatewayPrefix
-        ? `/${this.settings.gatewayPrefix}${path}`
-        : path,
+      path,
       pathParams,
       // decorate path params' name with curly braces
       pathParamName: function () {
@@ -272,8 +284,11 @@ export class TypescriptConverter implements BaseConverter {
             let output = ""
             const isRequired = (definition.required || []).indexOf(name)
             const description = def.description
+            const defIn = def["in"]
             if (description) {
-              output += `/** ${description} */\n`
+              output += `/** ${description} ${defIn ? `in ${defIn}` : ""} */\n`
+            } else if (defIn) {
+              output += `/** in ${defIn} */\n`
             }
             output += `'${name}'${
               isRequired ? "?" : ""
@@ -309,7 +324,10 @@ export class TypescriptConverter implements BaseConverter {
   public generateClient(name: string): string {
     let output = ""
     output += Mustache.render(readerTemplate("methodModule"), {
-      RequestFactoryName: "WhatWgFetchRequestFactory",
+      RequestFactoryName: this.settings.template,
+      customAgent: this.settings.customAgent,
+      // base path
+      baseUrl: this.settings.backend,
     })
     output += "\n"
     output += Object.entries(this.swagger.paths)

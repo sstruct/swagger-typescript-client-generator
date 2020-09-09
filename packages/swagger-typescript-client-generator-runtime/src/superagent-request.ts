@@ -1,39 +1,106 @@
 import * as request from "superagent"
-import { RequestFactoryType } from "./index"
-import { serialize } from "./serialize"
 
-export type WhatWgFetchFunctionType = (
-  input: RequestInfo,
-  init?: RequestInit
-) => Promise<Response>
-
-export interface WhatWgFetchRequestFactoryOptions {
-  requestInit: Omit<RequestInit, "body" | "method">
-  fetch?: WhatWgFetchFunctionType
-}
-
-export const WhatWgFetchRequestFactory = (
-  baseUrl: string,
-  options: WhatWgFetchRequestFactoryOptions
-): RequestFactoryType => ({
+export type RequestFactoryType = ({
   path,
+  payload,
+  payloadIn,
   query,
   body,
   formData,
   headers,
   method,
-  configuration: never,
+}: {
+  path: string
+  payload?: any
+  payloadIn?: any
+  query?: any
+  body?: any
+  formData?: any
+  headers?: any
+  method: string
+}) => Promise<request.Response>
+
+export type SuperagentFunctionType = (
+  input: RequestInfo,
+  init?: RequestInit
+) => Promise<request.Response>
+
+export interface SuperagentRequestFactoryOptions {
+  request?: request.SuperAgentRequest
+
+  onResponse?(any): any
+
+  onError?(any): any
+}
+
+const getParametersFromPayloadWithParamNames = (
+  payload: any,
+  paramNames: string[]
+) => {
+  if (!Array.isArray(paramNames)) return
+  const parameters = {}
+  paramNames.forEach((name) => {
+    if (Object.hasOwnProperty.call(payload, name)) {
+      parameters[name] = payload[name]
+    }
+  })
+  return parameters
+}
+
+const SuperagentRequestFactory = (
+  baseUrl: string,
+  options: SuperagentRequestFactoryOptions
+): RequestFactoryType => ({
+  path,
+  payload,
+  payloadIn,
+  query,
+  body,
+  formData,
+  method,
+  headers,
 }) => {
-  const headersObject = new Headers(options.requestInit.headers || {})
+  if (payloadIn) {
+    Object.keys(payloadIn).forEach((payloadType) => {
+      switch (payloadType) {
+        case "query":
+          query = getParametersFromPayloadWithParamNames(
+            payload,
+            payloadIn[payloadType]
+          )
+          break
+        case "body":
+          body = getParametersFromPayloadWithParamNames(
+            payload,
+            payloadIn[payloadType]
+          )
+          break
+        case "headers":
+          headers = getParametersFromPayloadWithParamNames(
+            payload,
+            payloadIn[payloadType]
+          )
+          break
+        case "formData":
+          formData = getParametersFromPayloadWithParamNames(
+            payload,
+            payloadIn[payloadType]
+          )
+          break
+      }
+    })
+  }
+
+  const headersObject = new Headers({})
 
   new Headers(headers).forEach((value, key) => {
     headersObject.set(key, String(value))
   })
 
-  const fetchOptions: RequestInit = Object.assign({}, options.requestInit, {
-    method: method,
-    headers: headersObject,
-  })
+  const fetchOptions: RequestInit = Object.assign(
+    {},
+    { method: method, headers: headersObject }
+  )
 
   if (body && typeof body === "string") {
     fetchOptions.body = body
@@ -46,16 +113,40 @@ export const WhatWgFetchRequestFactory = (
     }, new FormData())
   }
 
-  const hasQuery = query && Object.keys(query).length > 0
-  const fullUrl = [
-    baseUrl,
-    path,
-    hasQuery ? (path.includes("?") ? "&" : "?") : "",
-    hasQuery ? serialize(query) : "",
-  ].join("")
+  const callback: request.SuperAgentStatic | request.SuperAgentRequest = [
+    "function",
+    "object",
+  ].includes(typeof options.request)
+    ? options.request
+    : request
 
-  const callback: WhatWgFetchFunctionType =
-    typeof options.fetch === "function" ? options.fetch : fetch
+  const handleResponse = (response) => {
+    if (typeof options.onResponse === "function")
+      return options.onResponse(response)
+    return response
+  }
+  const handleError = (error) => {
+    if (typeof options.onError === "function") return options.onError(error)
+    throw error
+  }
 
-  return callback(fullUrl, fetchOptions)
+  const fullUrl = [baseUrl, path].join("")
+  const agentMethod = method.toLocaleLowerCase()
+
+  switch (agentMethod) {
+    case "delete":
+    case "get":
+      return callback[agentMethod](fullUrl)
+        .query(query)
+        .then((res) => handleResponse(res))
+        .catch((err) => handleError(err))
+    default:
+      return callback[agentMethod](fullUrl)
+        .query(query)
+        .send(fetchOptions.body)
+        .then((res) => handleResponse(res))
+        .catch((err) => handleError(err))
+  }
 }
+
+export default SuperagentRequestFactory

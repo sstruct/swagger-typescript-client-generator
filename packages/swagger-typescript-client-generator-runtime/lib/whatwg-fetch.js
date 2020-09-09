@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WhatWgFetchRequestFactory = void 0;
 var serialize_1 = require("./serialize");
-exports.WhatWgFetchRequestFactory = function (baseUrl, options) { return function (_a) {
+var WhatWgFetchRequestFactory = function (baseUrl, options) { return function (_a) {
     var path = _a.path, query = _a.query, body = _a.body, formData = _a.formData, headers = _a.headers, method = _a.method, never = _a.configuration;
     var headersObject = new Headers(options.requestInit.headers || {});
     new Headers(headers).forEach(function (value, key) {
@@ -34,3 +33,4 @@ exports.WhatWgFetchRequestFactory = function (baseUrl, options) { return functio
     var callback = typeof options.fetch === "function" ? options.fetch : fetch;
     return callback(fullUrl, fetchOptions);
 }; };
+exports.default = WhatWgFetchRequestFactory;

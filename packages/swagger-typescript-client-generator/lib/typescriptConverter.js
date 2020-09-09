@@ -26,8 +26,8 @@ var TypescriptConverter = /** @class */ (function () {
         this.parametersArrayToSchemaConverter = new parameterArrayToSchemaConverter_1.ParametersArrayToSchemaConverter();
         this.settings = Object.assign({}, {
             allowVoidParameters: true,
-            gatewayPrefix: "",
-            template: "WhatWgFetchRequestFactory",
+            backend: "",
+            template: "superagent-request",
             mergeParam: false,
         }, settings || {});
     }
@@ -59,6 +59,7 @@ var TypescriptConverter = /** @class */ (function () {
         var _a = this.getParametersJarFactory().createFromOperation(operation), payloadParams = _a.payloadParams, pathParams = _a.pathParams, queryParams = _a.queryParams, bodyParams = _a.bodyParams, formDataParams = _a.formDataParams, headerParams = _a.headerParams;
         var output = "";
         var parameters = [];
+        var payloadIn = {};
         if (!this.settings.mergeParam) {
             parameters = pathParams.map(function (parameter) {
                 return "" + parameter.name + PARAMETER_PATH_SUFFIX + ": " + _this.generateTypeValue(parameter);
@@ -69,19 +70,28 @@ var TypescriptConverter = /** @class */ (function () {
         };
         var appendParametersArgs = function (paramsType, params, paramsSuffix) {
             if (_this.settings.allowVoidParameters || params.length > 0) {
-                parameters.push(paramsType + ": " + name + paramsSuffix);
-                args[paramsType] = true;
+                if (_this.settings.mergeParam) {
+                    if (paramsType === swaggerTypes_1.PARAMETER_TYPE_PAYLOAD) {
+                        parameters.push(paramsType + ": " + name + paramsSuffix);
+                        args[paramsType] = true;
+                    }
+                    else {
+                        payloadIn[paramsType] = params.map(function (param) { return param.name; });
+                    }
+                }
+                else {
+                    parameters.push(paramsType + ": " + name + paramsSuffix);
+                    args[paramsType] = true;
+                }
             }
         };
         if (this.settings.mergeParam) {
             appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_PAYLOAD, payloadParams, PARAMETERS_PAYLOAD_SUFFIX);
         }
-        else {
-            appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_QUERY, queryParams, PARAMETERS_QUERY_SUFFIX);
-            appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_BODY, bodyParams, PARAMETERS_BODY_SUFFIX);
-            appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_FORM_DATA, formDataParams, PARAMETERS_FORM_DATA_SUFFIX);
-            appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_HEADER, headerParams, PARAMETERS_HEADER_SUFFIX);
-        }
+        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_QUERY, queryParams, PARAMETERS_QUERY_SUFFIX);
+        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_BODY, bodyParams, PARAMETERS_BODY_SUFFIX);
+        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_FORM_DATA, formDataParams, PARAMETERS_FORM_DATA_SUFFIX);
+        appendParametersArgs(swaggerTypes_1.PARAMETER_TYPE_HEADER, headerParams, PARAMETERS_HEADER_SUFFIX);
         var responseTypes = Object.entries(operation.responses || {})
             .map(function (_a) {
             var code = _a[0], response = _a[1];
@@ -98,14 +108,14 @@ var TypescriptConverter = /** @class */ (function () {
             name: name,
             // method parameters
             parameters: parameters.join(", "),
+            payloadIn: Object.keys(payloadIn).length
+                ? JSON.stringify(payloadIn)
+                : undefined,
             // request arguments(payload | query, body, formData)
             requestArgs: Object.keys(args).filter(function (arg) { return args[arg]; }),
             // define path keyword const/let
             definePath: pathParams.length > 0 ? "let" : "const",
-            // base path
-            path: this.settings.gatewayPrefix
-                ? "/" + this.settings.gatewayPrefix + path
-                : path,
+            path: path,
             pathParams: pathParams,
             // decorate path params' name with curly braces
             pathParamName: function () {
@@ -165,8 +175,12 @@ var TypescriptConverter = /** @class */ (function () {
                     var output = "";
                     var isRequired = (definition.required || []).indexOf(name);
                     var description = def.description;
+                    var defIn = def["in"];
                     if (description) {
-                        output += "/** " + description + " */\n";
+                        output += "/** " + description + " " + (defIn ? "in " + defIn : "") + " */\n";
+                    }
+                    else if (defIn) {
+                        output += "/** in " + defIn + " */\n";
                     }
                     output += "'" + name + "'" + (isRequired ? "?" : "") + ": " + _this.generateTypeValue(def);
                     return output;
@@ -195,7 +209,10 @@ var TypescriptConverter = /** @class */ (function () {
         var _this = this;
         var output = "";
         output += Mustache.render(templates_1.readerTemplate("methodModule"), {
-            RequestFactoryName: "WhatWgFetchRequestFactory",
+            RequestFactoryName: this.settings.template,
+            customAgent: this.settings.customAgent,
+            // base path
+            baseUrl: this.settings.backend,
         });
         output += "\n";
         output += Object.entries(this.swagger.paths)

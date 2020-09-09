@@ -1,26 +1,5 @@
-import { {{RequestFactoryName}} as requestFactory } from "swagger-typescript-client-generator-runtime/lib/whatwg-fetch"
+import { Response } from "superagent"
+import { default as requestFactory } from "swagger-typescript-client-generator-runtime/lib/{{RequestFactoryName}}";
+import { default as customAgent, onResponse, onError } from '{{&customAgent}}'
 
-const request = requestFactory('retail-mall/admin-web', { requestInit: {} })
-const configuration = {}
-
-export interface APIResponse<T> extends Response {
-  json (): Promise<T>
-}
-
-export type RequestFactoryType = ({
-  path,
-  query,
-  body,
-  formData,
-  headers,
-  method,
-  configuration,
-}: {
-  path: string;
-  query?: any;
-  body?: any;
-  formData?: any;
-  headers?: any;
-  method: string;
-  configuration: any;
-}) => Promise<APIResponse<any>>;
+const request = requestFactory("{{&baseUrl}}", { request: customAgent, onResponse, onError });

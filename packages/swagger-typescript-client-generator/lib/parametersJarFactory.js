@@ -28,7 +28,7 @@ var ParametersJarFactory = /** @class */ (function () {
                     swaggerTypes_1.PARAMETER_TYPE_PATH,
                     swaggerTypes_1.PARAMETER_TYPE_QUERY,
                     swaggerTypes_1.PARAMETER_TYPE_BODY,
-                    swaggerTypes_1.PARAMETER_TYPE_BODY,
+                    swaggerTypes_1.PARAMETER_TYPE_FORM_DATA,
                 ].includes(parameter.in);
         });
     };

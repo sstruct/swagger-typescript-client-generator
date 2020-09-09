@@ -16,9 +16,10 @@ export const defaultCommand: Command<DefaultCommandOptions> = (
     swagger,
     new TypescriptConverter(swagger, {
       allowVoidParameters: options.allowVoidParameterTypes,
-      gatewayPrefix: options.gatewayPrefix,
+      backend: options.backend,
       template: options.template,
       mergeParam: options.mergeParam,
+      customAgent: options.customAgent,
     })
   )
   return generator.generateSingleFile(options.name)

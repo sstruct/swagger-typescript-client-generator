@@ -4,4 +4,5 @@ export interface WhatWgFetchRequestFactoryOptions {
     requestInit: Omit<RequestInit, "body" | "method">;
     fetch?: WhatWgFetchFunctionType;
 }
-export declare const WhatWgFetchRequestFactory: (baseUrl: string, options: WhatWgFetchRequestFactoryOptions) => RequestFactoryType;
+declare const WhatWgFetchRequestFactory: (baseUrl: string, options: WhatWgFetchRequestFactoryOptions) => RequestFactoryType;
+export default WhatWgFetchRequestFactory;

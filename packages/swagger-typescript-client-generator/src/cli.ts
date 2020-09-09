@@ -1,4 +1,5 @@
 import * as yargs from "yargs"
+import * as path from "path"
 import { Spec } from "swagger-schema-official"
 import { Command } from "./commands/command"
 import { writerFactory } from "./writer/writerFactory"
@@ -16,13 +17,20 @@ const commandCore = async (command, options) => {
     swaggerUrl: options.swaggerUrl,
   })
 
+  const customAgentRelativePath = path.relative(
+    path.dirname(options.targetPath),
+    options.customAgent
+  )
+
   const spec = (await reader()) as Spec
   const output = command(spec, {
     allowVoidParameters: options.allowVoidParameters,
-    gatewayPrefix: options.gatewayPrefix,
+    backend: options.backend,
     template: options.template,
     mergeParam: options.mergeParam,
+    customAgent: `./${customAgentRelativePath}`,
   })
+
   const writer = writerFactory({ targetPath: options.targetPath })
   writer(output)
 }
@@ -33,16 +41,17 @@ const useCommand = (command: Command) => (args: CommandOptions) => {
       commandCore(command, {
         file: swagger.file,
         swaggerUrl: swagger.swagger_url,
-        gatewayPrefix: swagger.gatewayPrefix,
+        backend: swagger.backend,
         targetPath: swagger.targetPath,
         template: args.template,
         mergeParam: args.mergeParam,
+        customAgent: args.customAgent,
       })
     })
   } else {
     commandCore(command, {
       file: args.file,
-      gatewayPrefix: args.gatewayPrefix,
+      backend: args.backend,
       targetPath: args.targetPath,
       template: args.template,
       mergeParam: args.mergeParam,

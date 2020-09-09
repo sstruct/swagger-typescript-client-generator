@@ -1,7 +1,19 @@
-import { RequestFactoryType } from "./index";
-export declare type WhatWgFetchFunctionType = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-export interface WhatWgFetchRequestFactoryOptions {
-    requestInit: Omit<RequestInit, "body" | "method">;
-    fetch?: WhatWgFetchFunctionType;
+import * as request from "superagent";
+export declare type RequestFactoryType = ({ path, payload, payloadIn, query, body, formData, headers, method, }: {
+    path: string;
+    payload?: any;
+    payloadIn?: any;
+    query?: any;
+    body?: any;
+    formData?: any;
+    headers?: any;
+    method: string;
+}) => Promise<request.Response>;
+export declare type SuperagentFunctionType = (input: RequestInfo, init?: RequestInit) => Promise<request.Response>;
+export interface SuperagentRequestFactoryOptions {
+    request?: request.SuperAgentRequest;
+    onResponse?(any: any): any;
+    onError?(any: any): any;
 }
-export declare const WhatWgFetchRequestFactory: (baseUrl: string, options: WhatWgFetchRequestFactoryOptions) => RequestFactoryType;
+declare const SuperagentRequestFactory: (baseUrl: string, options: SuperagentRequestFactoryOptions) => RequestFactoryType;
+export default SuperagentRequestFactory;

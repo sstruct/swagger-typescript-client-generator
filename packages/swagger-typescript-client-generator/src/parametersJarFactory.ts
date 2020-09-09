@@ -51,7 +51,7 @@ export class ParametersJarFactory {
             PARAMETER_TYPE_PATH,
             PARAMETER_TYPE_QUERY,
             PARAMETER_TYPE_BODY,
-            PARAMETER_TYPE_BODY,
+            PARAMETER_TYPE_FORM_DATA,
           ].includes(parameter.in)
       )
   }

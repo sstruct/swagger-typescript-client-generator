@@ -5,7 +5,7 @@ export interface CliCommandOptions {
   allowVoidParameterTypes?: boolean
   configFile?: string
   file?: string
-  gatewayPrefix?: string
+  backend?: string
   targetPath?: string
 }
 

@@ -1,10 +1,13 @@
 {{#summary}}
 /** {{&summary}} */
 {{/summary}}
-export const {{name}} = ({{parameters}}): Promise<APIResponse<{{&responseTypes}}>> => {
+export const {{name}} = ({{parameters}}): Promise<{{&responseTypes}}> => {
   {{definePath}} path = '{{{path}}}'
   {{#pathParams}}
       path = path.replace("{{pathParamName}}", String(payload['{{&name}}']));
   {{/pathParams}}
-  return request({ path, {{#requestArgs}}{{.}},{{/requestArgs}} method: '{{method}}', configuration })
+  {{#payloadIn}}
+      const payloadIn = {{&payloadIn}}
+  {{/payloadIn}}
+  return request({ path, {{#requestArgs}}{{.}},{{/requestArgs}} {{#payloadIn}}payloadIn, {{/payloadIn}} method: '{{method}}' })
 }

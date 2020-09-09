@@ -4,7 +4,7 @@ export interface CliCommandOptions {
     allowVoidParameterTypes?: boolean;
     configFile?: string;
     file?: string;
-    gatewayPrefix?: string;
+    backend?: string;
     targetPath?: string;
 }
 export declare type CommandOptions = CliCommandOptions & Partial<yargs.Arguments<ConfigType>>;

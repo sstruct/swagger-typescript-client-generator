@@ -7,17 +7,17 @@ export type ConfigType = {
   swaggers: {
     swagger_url: string
     file?: string
-    gatewayPrefix?: string
-    backend: string
+    backend?: string
     alias: string
-    // tags:
-    target_path: string
     targetPath: string
   }[]
   // api client 生成的类型. 现在仅支持 js ts
   target_language: "ts" | "js"
-  // 所依赖的请求代理模块, default： default | tangram
-  template: "fetch" | "superagent" // TODO: 支持的选项
+  // 所依赖的请求模块, default: whatwg-fetch
+  template: "whatwg-fetch" | "superagent-request"
+  // 此配置仅当 template 为 superagent-request 时可用
+  // 自定义 superagent 路径，可自行添加 headers 或中间件，不传则使用默认 superagent
+  customAgent?: string
   // 是否开启 API 校验。默认为false。开启
   check_api: boolean
   // 方法名称上忽略 alias

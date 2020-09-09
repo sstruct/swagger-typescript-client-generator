@@ -37,13 +37,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var yargs = require("yargs");
+var path = require("path");
 var writerFactory_1 = require("./writer/writerFactory");
 var readerFactory_1 = require("./fileReader/readerFactory");
 var commands_1 = require("./commands");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 var pkg = require("../package.json");
 var commandCore = function (command, options) { return __awaiter(void 0, void 0, void 0, function () {
-    var reader, spec, output, writer;
+    var reader, customAgentRelativePath, spec, output, writer;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -51,14 +52,16 @@ var commandCore = function (command, options) { return __awaiter(void 0, void 0,
                     file: options.file,
                     swaggerUrl: options.swaggerUrl,
                 });
+                customAgentRelativePath = path.relative(path.dirname(options.targetPath), options.customAgent);
                 return [4 /*yield*/, reader()];
             case 1:
                 spec = (_a.sent());
                 output = command(spec, {
                     allowVoidParameters: options.allowVoidParameters,
-                    gatewayPrefix: options.gatewayPrefix,
+                    backend: options.backend,
                     template: options.template,
                     mergeParam: options.mergeParam,
+                    customAgent: "./" + customAgentRelativePath,
                 });
                 writer = writerFactory_1.writerFactory({ targetPath: options.targetPath });
                 writer(output);
@@ -72,20 +75,21 @@ var useCommand = function (command) { return function (args) {
             commandCore(command, {
                 file: swagger.file,
                 swaggerUrl: swagger.swagger_url,
-                gatewayPrefix: swagger.gatewayPrefix,
+                backend: swagger.backend,
                 targetPath: swagger.targetPath,
                 template: args.template,
                 mergeParam: args.mergeParam,
+                customAgent: args.customAgent,
             });
         });
     }
     else {
         commandCore(command, {
             file: args.file,
-            gatewayPrefix: args.gatewayPrefix,
+            backend: args.backend,
             targetPath: args.targetPath,
             template: args.template,
-            mergeParam: args.mergeParam
+            mergeParam: args.mergeParam,
         });
     }
 }; };
