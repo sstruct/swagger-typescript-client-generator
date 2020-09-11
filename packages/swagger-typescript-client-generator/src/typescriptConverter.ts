@@ -69,6 +69,8 @@ export class TypescriptConverter implements BaseConverter {
     )
   }
 
+  protected generatedDefinitions: string[] = []
+
   public generateParameterTypesForOperation(
     path: string,
     method: string,
@@ -122,6 +124,7 @@ export class TypescriptConverter implements BaseConverter {
 
     let parameters: string[] = []
 
+    const payloadInType: string[] = []
     const payloadIn: { [key: string]: string[] } = {}
 
     if (!this.settings.mergeParam) {
@@ -146,6 +149,9 @@ export class TypescriptConverter implements BaseConverter {
             args[paramsType] = true
           } else {
             payloadIn[paramsType] = params.map((param) => param.name)
+            if (!payloadInType.includes(paramsType)) {
+              payloadInType.push(paramsType)
+            }
           }
         } else {
           parameters.push(`${paramsType}: ${name}${paramsSuffix}`)
@@ -201,9 +207,11 @@ export class TypescriptConverter implements BaseConverter {
       name,
       // method parameters
       parameters: parameters.join(", "),
-      payloadIn: Object.keys(payloadIn).length
-        ? JSON.stringify(payloadIn)
-        : undefined,
+      payloadIn:
+        Object.keys(payloadIn).length > 1
+          ? JSON.stringify(payloadIn)
+          : undefined,
+      payloadInType: payloadInType.length === 1 ? payloadInType[0] : undefined,
       // request arguments(payload | query, body, formData)
       requestArgs: Object.keys(args).filter((arg) => args[arg]),
       // define path keyword const/let
@@ -233,6 +241,19 @@ export class TypescriptConverter implements BaseConverter {
     }
 
     if (definition.$ref) {
+      // const segments = definition.$ref.split("/")
+      // const parameterName = segments[2]
+      // const name = this.getNormalizer().normalize(parameterName)
+      // const referred = this.swagger.definitions[parameterName]
+      // if (!referred) {
+      //   throw new Error(`cannot find reference ${definition.$ref}`)
+      // }
+      // if (this.generatedDefinitions.includes(name)) {
+      //   return name
+      // } else {
+      //   this.generatedDefinitions.push(name)
+      //   return this.generateTypeValue(referred)
+      // }
       return this.getNormalizer().normalize(
         definition.$ref.substring(definition.$ref.lastIndexOf("/") + 1)
       )

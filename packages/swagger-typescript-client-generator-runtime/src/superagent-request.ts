@@ -4,6 +4,7 @@ export type RequestFactoryType = ({
   path,
   payload,
   payloadIn,
+  payloadInType,
   query,
   body,
   formData,
@@ -13,12 +14,13 @@ export type RequestFactoryType = ({
   path: string
   payload?: any
   payloadIn?: any
+  payloadInType?: string
   query?: any
   body?: any
   formData?: any
   headers?: any
   method: string
-}) => Promise<request.Response>
+}) => Promise<any>
 
 export type SuperagentFunctionType = (
   input: RequestInfo,
@@ -37,6 +39,7 @@ const getParametersFromPayloadWithParamNames = (
   payload: any,
   paramNames: string[]
 ) => {
+  if (payload && typeof payload === "string") return payload
   if (!Array.isArray(paramNames)) return
   const parameters = {}
   paramNames.forEach((name) => {
@@ -50,46 +53,19 @@ const getParametersFromPayloadWithParamNames = (
 const SuperagentRequestFactory = (
   baseUrl: string,
   options: SuperagentRequestFactoryOptions
-): RequestFactoryType => ({
-  path,
-  payload,
-  payloadIn,
-  query,
-  body,
-  formData,
-  method,
-  headers,
-}) => {
-  if (payloadIn) {
-    Object.keys(payloadIn).forEach((payloadType) => {
-      switch (payloadType) {
-        case "query":
-          query = getParametersFromPayloadWithParamNames(
-            payload,
-            payloadIn[payloadType]
-          )
-          break
-        case "body":
-          body = getParametersFromPayloadWithParamNames(
-            payload,
-            payloadIn[payloadType]
-          )
-          break
-        case "headers":
-          headers = getParametersFromPayloadWithParamNames(
-            payload,
-            payloadIn[payloadType]
-          )
-          break
-        case "formData":
-          formData = getParametersFromPayloadWithParamNames(
-            payload,
-            payloadIn[payloadType]
-          )
-          break
-      }
+): RequestFactoryType => (args) => {
+  const { payload, payloadIn, payloadInType } = args
+  if (payloadInType) {
+    args[payloadInType] = payload
+  } else if (payloadIn) {
+    Object.keys(payloadIn).forEach((type) => {
+      args[type] = getParametersFromPayloadWithParamNames(
+        payload,
+        payloadIn[type]
+      )
     })
   }
+  const { path, query, body, formData, method, headers } = args
 
   const headersObject = new Headers({})
 
@@ -102,10 +78,8 @@ const SuperagentRequestFactory = (
     { method: method, headers: headersObject }
   )
 
-  if (body && typeof body === "string") {
+  if (body !== undefined) {
     fetchOptions.body = body
-  } else if (body && typeof body === "object" && Object.keys(body).length > 0) {
-    fetchOptions.body = JSON.stringify(body)
   } else if (formData && Object.keys(formData).length > 0) {
     fetchOptions.body = Object.keys(formData).reduce((data, key) => {
       data.append(key, formData[key])

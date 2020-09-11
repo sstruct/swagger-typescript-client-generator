@@ -22,6 +22,7 @@ export declare class TypescriptConverter implements BaseConverter {
     protected parametersJarFactory: ParametersJarFactory;
     protected parametersArrayToSchemaConverter: ParametersArrayToSchemaConverter;
     constructor(swagger: Spec, settings?: SwaggerToTypescriptConverterSettings);
+    protected generatedDefinitions: string[];
     generateParameterTypesForOperation(path: string, method: string, operation: Operation): string;
     generateOperation(path: string, method: string, operation: Operation): string;
     generateType(name: string, definition: Schema): string;

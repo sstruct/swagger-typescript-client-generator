@@ -1,14 +1,15 @@
 import * as request from "superagent";
-export declare type RequestFactoryType = ({ path, payload, payloadIn, query, body, formData, headers, method, }: {
+export declare type RequestFactoryType = ({ path, payload, payloadIn, payloadInType, query, body, formData, headers, method, }: {
     path: string;
     payload?: any;
     payloadIn?: any;
+    payloadInType?: string;
     query?: any;
     body?: any;
     formData?: any;
     headers?: any;
     method: string;
-}) => Promise<request.Response>;
+}) => Promise<any>;
 export declare type SuperagentFunctionType = (input: RequestInfo, init?: RequestInit) => Promise<request.Response>;
 export interface SuperagentRequestFactoryOptions {
     request?: request.SuperAgentRequest;

@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var request = require("superagent");
 var getParametersFromPayloadWithParamNames = function (payload, paramNames) {
+    if (payload && typeof payload === "string")
+        return payload;
     if (!Array.isArray(paramNames))
         return;
     var parameters = {};
@@ -12,36 +14,24 @@ var getParametersFromPayloadWithParamNames = function (payload, paramNames) {
     });
     return parameters;
 };
-var SuperagentRequestFactory = function (baseUrl, options) { return function (_a) {
-    var path = _a.path, payload = _a.payload, payloadIn = _a.payloadIn, query = _a.query, body = _a.body, formData = _a.formData, method = _a.method, headers = _a.headers;
-    if (payloadIn) {
-        Object.keys(payloadIn).forEach(function (payloadType) {
-            switch (payloadType) {
-                case "query":
-                    query = getParametersFromPayloadWithParamNames(payload, payloadIn[payloadType]);
-                    break;
-                case "body":
-                    body = getParametersFromPayloadWithParamNames(payload, payloadIn[payloadType]);
-                    break;
-                case "headers":
-                    headers = getParametersFromPayloadWithParamNames(payload, payloadIn[payloadType]);
-                    break;
-                case "formData":
-                    formData = getParametersFromPayloadWithParamNames(payload, payloadIn[payloadType]);
-                    break;
-            }
+var SuperagentRequestFactory = function (baseUrl, options) { return function (args) {
+    var payload = args.payload, payloadIn = args.payloadIn, payloadInType = args.payloadInType;
+    if (payloadInType) {
+        args[payloadInType] = payload;
+    }
+    else if (payloadIn) {
+        Object.keys(payloadIn).forEach(function (type) {
+            args[type] = getParametersFromPayloadWithParamNames(payload, payloadIn[type]);
         });
     }
+    var path = args.path, query = args.query, body = args.body, formData = args.formData, method = args.method, headers = args.headers;
     var headersObject = new Headers({});
     new Headers(headers).forEach(function (value, key) {
         headersObject.set(key, String(value));
     });
     var fetchOptions = Object.assign({}, { method: method, headers: headersObject });
-    if (body && typeof body === "string") {
+    if (body !== undefined) {
         fetchOptions.body = body;
-    }
-    else if (body && typeof body === "object" && Object.keys(body).length > 0) {
-        fetchOptions.body = JSON.stringify(body);
     }
     else if (formData && Object.keys(formData).length > 0) {
         fetchOptions.body = Object.keys(formData).reduce(function (data, key) {

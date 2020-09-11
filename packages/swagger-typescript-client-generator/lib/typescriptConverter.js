@@ -24,6 +24,7 @@ var TypescriptConverter = /** @class */ (function () {
         this.normalizer = new typescriptNameNormalizer_1.TypescriptNameNormalizer();
         this.parametersJarFactory = new parametersJarFactory_1.ParametersJarFactory(this.swagger);
         this.parametersArrayToSchemaConverter = new parameterArrayToSchemaConverter_1.ParametersArrayToSchemaConverter();
+        this.generatedDefinitions = [];
         this.settings = Object.assign({}, {
             allowVoidParameters: true,
             backend: "",
@@ -59,6 +60,7 @@ var TypescriptConverter = /** @class */ (function () {
         var _a = this.getParametersJarFactory().createFromOperation(operation), payloadParams = _a.payloadParams, pathParams = _a.pathParams, queryParams = _a.queryParams, bodyParams = _a.bodyParams, formDataParams = _a.formDataParams, headerParams = _a.headerParams;
         var output = "";
         var parameters = [];
+        var payloadInType = [];
         var payloadIn = {};
         if (!this.settings.mergeParam) {
             parameters = pathParams.map(function (parameter) {
@@ -77,6 +79,9 @@ var TypescriptConverter = /** @class */ (function () {
                     }
                     else {
                         payloadIn[paramsType] = params.map(function (param) { return param.name; });
+                        if (!payloadInType.includes(paramsType)) {
+                            payloadInType.push(paramsType);
+                        }
                     }
                 }
                 else {
@@ -108,9 +113,10 @@ var TypescriptConverter = /** @class */ (function () {
             name: name,
             // method parameters
             parameters: parameters.join(", "),
-            payloadIn: Object.keys(payloadIn).length
+            payloadIn: Object.keys(payloadIn).length > 1
                 ? JSON.stringify(payloadIn)
                 : undefined,
+            payloadInType: payloadInType.length === 1 ? payloadInType[0] : undefined,
             // request arguments(payload | query, body, formData)
             requestArgs: Object.keys(args).filter(function (arg) { return args[arg]; }),
             // define path keyword const/let
@@ -135,6 +141,19 @@ var TypescriptConverter = /** @class */ (function () {
             return this.generateTypeValue(definition.schema);
         }
         if (definition.$ref) {
+            // const segments = definition.$ref.split("/")
+            // const parameterName = segments[2]
+            // const name = this.getNormalizer().normalize(parameterName)
+            // const referred = this.swagger.definitions[parameterName]
+            // if (!referred) {
+            //   throw new Error(`cannot find reference ${definition.$ref}`)
+            // }
+            // if (this.generatedDefinitions.includes(name)) {
+            //   return name
+            // } else {
+            //   this.generatedDefinitions.push(name)
+            //   return this.generateTypeValue(referred)
+            // }
             return this.getNormalizer().normalize(definition.$ref.substring(definition.$ref.lastIndexOf("/") + 1));
         }
         if (Array.isArray(definition.allOf) && definition.allOf.length > 0) {

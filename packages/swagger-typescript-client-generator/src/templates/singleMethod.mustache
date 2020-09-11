@@ -6,8 +6,11 @@ export const {{name}} = ({{parameters}}): Promise<{{&responseTypes}}> => {
   {{#pathParams}}
       path = path.replace("{{pathParamName}}", String(payload['{{&name}}']));
   {{/pathParams}}
+  {{#payloadInType}}
+      const payloadInType = "{{&payloadInType}}"
+  {{/payloadInType}}
   {{#payloadIn}}
       const payloadIn = {{&payloadIn}}
   {{/payloadIn}}
-  return request({ path, {{#requestArgs}}{{.}},{{/requestArgs}} {{#payloadIn}}payloadIn, {{/payloadIn}} method: '{{method}}' })
+  return request({ path, {{#requestArgs}}{{.}},{{/requestArgs}} {{#payloadIn}}payloadIn, {{/payloadIn}} {{#payloadInType}}payloadInType, {{/payloadInType}} method: '{{method}}' })
 }
