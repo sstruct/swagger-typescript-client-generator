@@ -1,5 +1,5 @@
 import { Response } from "superagent"
-import { default as requestFactory } from "swagger-typescript-client-generator-runtime/lib/{{RequestFactoryName}}";
+import { default as requestFactory } from "@terminus/jarvisplus-runtime/lib/{{RequestFactoryName}}";
 import { default as customAgent, onResponse, onError } from '{{&customAgent}}'
 
 const request = requestFactory("{{&baseUrl}}", { request: customAgent, onResponse, onError });

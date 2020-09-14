@@ -1,24 +1,24 @@
-# swagger-typescript-client-generator
+# @terminus/jarvisplus
 
 Generate typescript client/models from swagger.json file
 
 ## install
 
 ```
-npm install --global swagger-typescript-client-generator
+npm install --global @terminus/jarvisplus
 ```
 
 ## generate separate files for models and client
 
 ```
-$ swagger-typescript-client-generator models -f swagger.json > models.ts
-$ swagger-typescript-client-generator client MyApi "./models.ts" -f swagger.json > client.ts
+$ @terminus/jarvisplus models -f swagger.json > models.ts
+$ @terminus/jarvisplus client MyApi "./models.ts" -f swagger.json > client.ts
 ```
 
 ## generate one file for both models and client
 
 ```
-$ swagger-typescript-client-generator bundle MyApi -f swagger.json > client.ts
+$ @terminus/jarvisplus bundle MyApi -f swagger.json > client.ts
 ```
 
 ## commands

@@ -9,12 +9,12 @@ export class ParametersArrayToSchemaConverter {
     const schema: Schema = {
       type: "object",
       required: parameters
-        .filter(param => Boolean(param.required))
-        .map(param => param.name),
-      properties: {}
+        .filter((param) => Boolean(param.required))
+        .map((param) => param.name),
+      properties: {},
     }
 
-    parameters.forEach(param => {
+    parameters.forEach((param) => {
       schema.properties[param.name] = (param as any) as Schema
     })
 
@@ -27,7 +27,7 @@ export class ParametersArrayToSchemaConverter {
     }
 
     return {
-      allOf: (parameters as any) as Schema[]
+      allOf: (parameters as any) as Schema[],
     }
   }
 }

@@ -12,14 +12,14 @@ describe("TypescriptConverter", () => {
       expect(
         converter.generateTypeValue({
           type: "enum",
-          enum: ["1", "2", "3"]
+          enum: ["1", "2", "3"],
         })
       ).toBe("1 | 2 | 3")
 
       expect(
         converter.generateTypeValue({
           type: "enum",
-          enum: ['"int"', '"string"', '"bool"']
+          enum: ['"int"', '"string"', '"bool"'],
         })
       ).toBe('"int" | "string" | "bool"')
     })
@@ -27,12 +27,12 @@ describe("TypescriptConverter", () => {
     test("it should generate correct number type", () => {
       expect(
         converter.generateTypeValue({
-          type: "number"
+          type: "number",
         })
       ).toBe("number")
       expect(
         converter.generateTypeValue({
-          type: "integer"
+          type: "integer",
         })
       ).toBe("number")
     })
@@ -40,7 +40,7 @@ describe("TypescriptConverter", () => {
     test("it should generate correct string type", () => {
       expect(
         converter.generateTypeValue({
-          type: "string"
+          type: "string",
         })
       ).toBe("string")
     })
@@ -48,7 +48,7 @@ describe("TypescriptConverter", () => {
     test("it should generate correct boolean type", () => {
       expect(
         converter.generateTypeValue({
-          type: "boolean"
+          type: "boolean",
         })
       ).toBe("boolean")
     })
@@ -58,8 +58,8 @@ describe("TypescriptConverter", () => {
         converter.generateTypeValue({
           type: "array",
           items: {
-            type: "boolean"
-          }
+            type: "boolean",
+          },
         })
       ).toBe("Array<boolean>")
 
@@ -67,8 +67,8 @@ describe("TypescriptConverter", () => {
         converter.generateTypeValue({
           type: "array",
           items: {
-            $ref: "definitions/SomeType"
-          }
+            $ref: "definitions/SomeType",
+          },
         })
       ).toBe("Array<SomeType>")
     })
@@ -79,12 +79,12 @@ describe("TypescriptConverter", () => {
           type: "object",
           properties: {
             test1: {
-              type: "boolean"
+              type: "boolean",
             },
             test2: {
-              type: "string"
-            }
-          }
+              type: "string",
+            },
+          },
         })
       ).toBe(`{\n'test1'?: boolean\n'test2'?: string\n}`)
     })
@@ -95,13 +95,13 @@ describe("TypescriptConverter", () => {
           type: "object",
           properties: {
             test1: {
-              type: "boolean"
+              type: "boolean",
             },
             test2: {
-              type: "string"
-            }
+              type: "string",
+            },
           },
-          required: ["test1"]
+          required: ["test1"],
         })
       ).toBe(`{\n'test1': boolean\n'test2'?: string\n}`)
     })
@@ -112,12 +112,12 @@ describe("TypescriptConverter", () => {
           type: "object",
           properties: {
             type: {
-              type: "string"
-            }
+              type: "string",
+            },
           },
           additionalProperties: {
-            type: "boolean"
-          }
+            type: "boolean",
+          },
         })
       ).toBe(`{\n'type'?: string\n} & { [key: string]: boolean }`)
     })
@@ -128,12 +128,12 @@ describe("TypescriptConverter", () => {
           type: "object",
           properties: {
             test1: {
-              type: "string"
-            }
+              type: "string",
+            },
           },
           additionalProperties: {
-            type: "string"
-          }
+            type: "string",
+          },
         })
       ).toBe(`{\n'test1'?: string\n} & { [key: string]: string }`)
     })
@@ -141,7 +141,7 @@ describe("TypescriptConverter", () => {
     test("it should generate correct object type with no properties", () => {
       expect(
         converter.generateTypeValue({
-          type: "object"
+          type: "object",
         })
       ).toBe(`{}`)
     })
@@ -151,9 +151,9 @@ describe("TypescriptConverter", () => {
         converter.generateTypeValue({
           properties: {
             key: {
-              type: "string"
-            }
-          }
+              type: "string",
+            },
+          },
         })
       ).toBe(`{\n'key'?: string\n}`)
     })
@@ -162,8 +162,8 @@ describe("TypescriptConverter", () => {
       expect(
         converter.generateTypeValue({
           additionalProperties: {
-            type: "string"
-          }
+            type: "string",
+          },
         })
       ).toBe(`{ [key: string]: string }`)
     })
@@ -177,19 +177,19 @@ describe("TypescriptConverter", () => {
               type: "object",
               properties: {
                 key: {
-                  type: "string"
-                }
-              }
+                  type: "string",
+                },
+              },
             },
             {
               type: "object",
               properties: {
                 value: {
-                  type: "string"
-                }
-              }
-            }
-          ]
+                  type: "string",
+                },
+              },
+            },
+          ],
         })
       ).toBe("{\n'key'?: string\n} & {\n'value'?: string\n}")
     })

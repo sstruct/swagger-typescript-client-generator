@@ -1,13 +1,7 @@
 {
-  "packages": [
-    "packages/swagger-typescript-client-generator",
-    "packages/swagger-typescript-client-generator-runtime"
-  ],
+  "packages": ["packages/jarvisplus", "packages/jarvisplus-runtime"],
   "npmClient": "yarn",
   "useWorkspaces": true,
-  "workspaces": [
-    "packages/swagger-typescript-client-generator",
-    "packages/swagger-typescript-client-generator-runtime"
-  ],
+  "workspaces": ["packages/jarvisplus", "packages/jarvisplus-runtime"],
   "version": "1.5.3"
 }

@@ -21,14 +21,14 @@
       }
     },
     {
-      "files": ["packages/swagger-typescript-client-generator/**/*.ts"],
+      "files": ["packages/jarvisplus/**/*.ts"],
       "env": {
         "browser": false,
         "node": true
       }
     },
     {
-      "files": ["packages/swagger-typescript-client-generator-runtime/**/*.ts"],
+      "files": ["packages/jarvisplus-runtime/**/*.ts"],
       "env": {
         "browser": true
       }

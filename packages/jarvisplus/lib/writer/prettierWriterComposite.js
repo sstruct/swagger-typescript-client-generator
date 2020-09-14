@@ -4,6 +4,6 @@ exports.prettierWriterComposite = void 0;
 var prettier = require("prettier");
 exports.prettierWriterComposite = function (writer) { return function (content, options) {
     return writer(prettier.format(content, {
-        parser: "typescript"
+        parser: "typescript",
     }), options);
 }; };

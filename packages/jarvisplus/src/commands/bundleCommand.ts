@@ -15,7 +15,7 @@ export const bundleCommand: Command<BundleCommandOptions> = (
   const generator = new TypescriptClientGenerator(
     swagger,
     new TypescriptConverter(swagger, {
-      allowVoidParameters: options.allowVoidParameterTypes
+      allowVoidParameters: options.allowVoidParameterTypes,
     })
   )
 

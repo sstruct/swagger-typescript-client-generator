@@ -13,7 +13,7 @@ var ParametersArrayToSchemaConverter = /** @class */ (function () {
             required: parameters
                 .filter(function (param) { return Boolean(param.required); })
                 .map(function (param) { return param.name; }),
-            properties: {}
+            properties: {},
         };
         parameters.forEach(function (param) {
             schema.properties[param.name] = param;
@@ -25,7 +25,7 @@ var ParametersArrayToSchemaConverter = /** @class */ (function () {
             throw new Error("invalid argument");
         }
         return {
-            allOf: parameters
+            allOf: parameters,
         };
     };
     return ParametersArrayToSchemaConverter;

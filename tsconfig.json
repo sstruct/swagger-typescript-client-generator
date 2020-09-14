@@ -1,8 +1,8 @@
 {
   "extends": "./base.tsconfig.json",
   "references": [
-    { "path": "packages/swagger-typescript-client-generator-runtime" },
-    { "path": "packages/swagger-typescript-client-generator" }
+    { "path": "packages/@terminus/jarvisplus-runtime" },
+    { "path": "packages/@terminus/jarvisplus" }
   ],
   "files": [],
   "compilerOptions": {

@@ -1,7 +1,7 @@
 {
-  "name": "swagger-typescript-client-generator-runtime",
+  "name": "@terminus/jarvisplus-runtime",
   "version": "1.5.3",
-  "description": "Runtime modules for swagger-typescript-client-generator",
+  "description": "Runtime modules for @terminus/jarvisplus",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "license": "MIT",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/psrebniak/swagger-typescript-client-generator.git"
+    "url": "https://github.com/psrebniak/@terminus/jarvisplus.git"
   },
   "devDependencies": {
     "@types/jest": "^25.2.1",

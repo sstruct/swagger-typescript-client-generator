@@ -21,7 +21,7 @@ describe("ParametersArrayToSchemaConverter", () => {
       const expected: Schema = {
         type: "object",
         required: [],
-        properties: {}
+        properties: {},
       }
 
       expect(converter.convertToObject([])).toStrictEqual(expected)
@@ -37,27 +37,27 @@ describe("ParametersArrayToSchemaConverter", () => {
           test1: {
             name: "test1",
             type: "string",
-            in: "header"
+            in: "header",
           } as any,
           test2: {
             name: "test2",
             type: "string",
-            in: "header"
-          } as any
-        }
+            in: "header",
+          } as any,
+        },
       }
 
       const parameters: Parameter[] = [
         {
           name: "test1",
           type: "string",
-          in: "header"
+          in: "header",
         },
         {
           name: "test2",
           type: "string",
-          in: "header"
-        }
+          in: "header",
+        },
       ]
 
       expect(converter.convertToObject(parameters)).toStrictEqual(expected)
@@ -73,29 +73,29 @@ describe("ParametersArrayToSchemaConverter", () => {
           test1: {
             name: "test1",
             type: "string",
-            in: "header"
+            in: "header",
           } as any,
           test2: {
             name: "test2",
             type: "string",
             in: "header",
-            required: true
-          } as any
-        }
+            required: true,
+          } as any,
+        },
       }
 
       const parameters: Parameter[] = [
         {
           name: "test1",
           type: "string",
-          in: "header"
+          in: "header",
         },
         {
           name: "test2",
           type: "string",
           in: "header",
-          required: true
-        }
+          required: true,
+        },
       ]
 
       expect(converter.convertToObject(parameters)).toStrictEqual(expected)
@@ -119,7 +119,7 @@ describe("ParametersArrayToSchemaConverter", () => {
       const converter = new ParametersArrayToSchemaConverter()
 
       const expected: Schema = {
-        allOf: []
+        allOf: [],
       }
 
       expect(converter.convertToUnion([])).toStrictEqual(expected)
@@ -133,27 +133,27 @@ describe("ParametersArrayToSchemaConverter", () => {
           {
             name: "test1",
             type: "string",
-            in: "header"
+            in: "header",
           } as any,
           {
             name: "test2",
             type: "string",
-            in: "header"
-          } as any
-        ]
+            in: "header",
+          } as any,
+        ],
       }
 
       const parameters: Parameter[] = [
         {
           name: "test1",
           type: "string",
-          in: "header"
+          in: "header",
         },
         {
           name: "test2",
           type: "string",
-          in: "header"
-        }
+          in: "header",
+        },
       ]
 
       expect(converter.convertToUnion(parameters)).toStrictEqual(expected)

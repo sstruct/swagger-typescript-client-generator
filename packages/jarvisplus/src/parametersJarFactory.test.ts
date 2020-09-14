@@ -5,8 +5,8 @@ const protectedSwagger: Spec = {
   securityDefinitions: {
     apiKey: {
       type: "apiKey",
-      in: "header"
-    }
+      in: "header",
+    },
   },
   paths: {
     "/project": {
@@ -17,29 +17,29 @@ const protectedSwagger: Spec = {
             description: "Auth token",
             required: false,
             type: "string",
-            in: "query"
-          }
+            in: "query",
+          },
         ],
         security: [
           {
-            apiKey: []
-          } as any
+            apiKey: [],
+          } as any,
         ],
         responses: {
           200: {
-            description: ""
-          }
-        }
-      }
-    }
-  }
+            description: "",
+          },
+        },
+      },
+    },
+  },
 } as any
 
 const refSwagger: Spec = {
   swagger: "2.0",
   info: {
     version: "0.0.0",
-    title: "<enter your title>"
+    title: "<enter your title>",
   },
   parameters: {
     id: {
@@ -47,15 +47,15 @@ const refSwagger: Spec = {
       in: "query",
       description: "id",
       required: true,
-      type: "string"
-    }
+      type: "string",
+    },
   },
   paths: {
     "/persons": {
       parameters: [
         {
-          $ref: "#/parameters/id"
-        }
+          $ref: "#/parameters/id",
+        },
       ],
       get: {
         description: "Gets `Person` object.",
@@ -65,17 +65,17 @@ const refSwagger: Spec = {
             description: "Auth token",
             required: false,
             type: "string",
-            in: "query"
-          }
+            in: "query",
+          },
         ],
         responses: {
           200: {
-            description: "Successful response"
-          }
-        }
-      }
-    }
-  }
+            description: "Successful response",
+          },
+        },
+      },
+    },
+  },
 }
 
 describe("ParametersJarFactory", () => {
@@ -98,12 +98,12 @@ describe("ParametersJarFactory", () => {
           description: "Auth token",
           required: false,
           type: "string",
-          in: "query"
-        }
+          in: "query",
+        },
       ],
       bodyParams: [],
       formDataParams: [],
-      headerParams: [{ type: "apiKey", in: "header" }]
+      headerParams: [{ type: "apiKey", in: "header" }],
     })
   })
 })

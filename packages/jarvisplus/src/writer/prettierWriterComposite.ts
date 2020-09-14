@@ -8,7 +8,7 @@ export const prettierWriterComposite = (writer: Writer) => (
 ) => {
   return writer(
     prettier.format(content, {
-      parser: "typescript"
+      parser: "typescript",
     }),
     options
   )
