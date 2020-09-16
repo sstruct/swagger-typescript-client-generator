@@ -1,3 +1,8 @@
-# @terminus/jarvisplus-runtime
+# jarvisplus-runtime
 
-Abstract client and WhatWg fetch implementation of requestFactory
+运行时代码
+
+现在支持:
+
+- superagent
+- whatwg-fetch

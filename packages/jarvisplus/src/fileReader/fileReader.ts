@@ -5,7 +5,7 @@ export type FileReader<T = Spec> = (options: FileReaderOptions) => T
 
 export type ConfigType = {
   swaggers: {
-    swagger_url: string
+    swagger_url?: string
     file?: string
     backend?: string
     alias: string
