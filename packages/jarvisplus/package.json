@@ -1,6 +1,6 @@
 {
   "name": "@terminus/jarvisplus",
-  "version": "1.5.3",
+  "version": "0.0.1",
   "description": "Tool to convert swagger 2.0 file to typescript client",
   "main": "lib/index.js",
   "bin": "bin/index.js",
@@ -18,12 +18,12 @@
     "url": "https://github.com/psrebniak/@terminus/jarvisplus.git"
   },
   "dependencies": {
+    "@terminus/jarvisplus-runtime": "^0.0.1",
     "@types/swagger-schema-official": "^2.0.21",
     "js-yaml": "^3.13.1",
     "mustache": "^4.0.1",
     "node-fetch": "^2.6.0",
     "prettier": "^2.0.3",
-    "@terminus/jarvisplus-runtime": "^1.5.3",
     "yargs": "^15.1.0"
   },
   "devDependencies": {
